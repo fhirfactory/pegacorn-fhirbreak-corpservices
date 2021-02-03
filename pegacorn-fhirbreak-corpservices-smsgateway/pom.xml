@@ -14,7 +14,7 @@
     <artifactId>pegacorn-fhirbreak-corpservices-smsgateway</artifactId>
     <packaging>jar</packaging>
 
-    <name>Pegacorn :: FHIRBreak :: Corporate Services :: eMail Gateway</name>
+    <name>Pegacorn :: FHIRBreak :: Corporate Services :: SMS Gateway</name>
 
     <url>http://pegacorn.fhirfactory.net</url>
 
