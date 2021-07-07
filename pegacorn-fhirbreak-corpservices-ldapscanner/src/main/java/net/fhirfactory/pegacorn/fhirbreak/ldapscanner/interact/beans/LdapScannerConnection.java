@@ -67,8 +67,7 @@ public class LdapScannerConnection extends BaseLdapConnection {
 			
 		        Response response = searchCursor.get();
 				
-				if (response instanceof SearchResultEntry)
-		        {
+				if (response instanceof SearchResultEntry) {
 					Entry resultEntry = ((SearchResultEntry) response).getEntry();
 					
 					PractitionerLdapEntry practitionerLdapEntry = new PractitionerLdapEntry(baseDN, resultEntry);
