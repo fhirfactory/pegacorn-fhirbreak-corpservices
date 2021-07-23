@@ -102,6 +102,15 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>net.fhirfactory.pegacorn</groupId>
+            <artifactId>pegacorn-buildingblocks-workunitprocessors</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        
+        
         <dependency>
             <groupId>net.fhirfactory.pegacorn</groupId>
             <artifactId>pegacorn-platform-petasos-datasets</artifactId>

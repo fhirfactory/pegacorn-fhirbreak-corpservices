@@ -81,7 +81,13 @@
             <scope>compile</scope>
             <version>${project.version}</version>
         </dependency>
-     
+        
+        <dependency>
+            <groupId>net.fhirfactory.pegacorn</groupId>
+            <artifactId>pegacorn-buildingblocks-workunitprocessors</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.jboss.msc</groupId>

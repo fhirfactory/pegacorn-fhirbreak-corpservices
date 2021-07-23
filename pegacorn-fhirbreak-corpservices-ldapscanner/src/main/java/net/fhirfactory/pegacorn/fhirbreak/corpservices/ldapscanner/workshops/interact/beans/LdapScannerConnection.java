@@ -1,4 +1,4 @@
-package net.fhirfactory.pegacorn.fhirbreak.ldapscanner.interact.beans;
+package net.fhirfactory.pegacorn.fhirbreak.corpservices.ldapscanner.workshops.interact.beans;
 
 import java.io.IOException;
 import java.util.ArrayList;
