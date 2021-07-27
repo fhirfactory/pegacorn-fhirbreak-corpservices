@@ -11,10 +11,10 @@
         <relativePath>../pegacorn-fhirbreak-corpservices</relativePath>
     </parent>
 
-    <artifactId>pegacorn-fhirbreak-corpservices-ldapsync</artifactId>
+    <artifactId>pegacorn-fhirbreak-ldapsync</artifactId>
     <packaging>jar</packaging>
 
-    <name>Pegacorn :: FHIRBreak :: Corporate Services :: LDAP Sync</name>
+    <name>Pegacorn :: FHIRBreak :: LDAP Sync</name>
 
     <url>http://pegacorn.fhirfactory.net</url>
 
