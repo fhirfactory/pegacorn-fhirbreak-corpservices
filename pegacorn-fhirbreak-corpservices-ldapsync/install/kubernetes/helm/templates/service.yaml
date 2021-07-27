@@ -1,0 +1,25 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/port: "9779"
+    prometheus.io/scrape: "true"
+  labels:
+    app: {{ .Values.subsystemInstant.subsystemName }}
+    provider: fabric8
+    version: {{ .Values.subsystemInstant.subsystemVersion }}
+    group: {{ .Values.subsystemInstant.solutionGroup }}
+  name: {{ .Values.subsystemInstant.subsystemName }}
+spec:
+  ports:
+    - name: {{ .Values.edgeAnswer.name }}
+      port: {{ .Values.edgeAnswer.servicePortValue }}
+      protocol: TCP
+      targetPort: {{ .Values.edgeAnswer.portValue }}
+  selector:
+    app: {{ .Values.subsystemInstant.subsystemName }}
+    group: {{ .Values.subsystemInstant.solutionGroup }}
+    provider: fabric8
+  type: "LoadBalancer"
+  loadBalancerIP:  {{ .Values.subsystemInstant.externalisedServiceHost }}

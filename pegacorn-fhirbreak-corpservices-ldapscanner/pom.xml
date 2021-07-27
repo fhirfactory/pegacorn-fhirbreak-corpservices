@@ -143,13 +143,7 @@
             <scope>compile</scope>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-platform-petasos-topology</artifactId>
-            <type>jar</type>
-            <scope>compile</scope>
-            <version>${project.version}</version>
-        </dependency>
+               
         <dependency>
             <groupId>net.fhirfactory.pegacorn</groupId>
             <artifactId>pegacorn-platform-petasos-datasets</artifactId>
@@ -164,6 +158,7 @@
             <scope>compile</scope>
             <version>${project.version}</version>
         </dependency>
+
         <!-- Pegacorn::BuildingBlocks -->
         <dependency>
             <groupId>net.fhirfactory.pegacorn</groupId>
@@ -255,8 +250,17 @@
         </dependency>
         <dependency>
             <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-buildingblocks-edge</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <artifactId>pegacorn-buildingblocks-edge-messaging</artifactId>
+           <version>${project.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.fhirfactory.pegacorn</groupId>
+            <artifactId>pegacorn-buildingblocks-edge-model</artifactId>
+           <version>${project.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
         </dependency>
         
         <dependency>
@@ -279,10 +283,12 @@
 
     </dependencies>
 
+  <!-- Profiles -->
     <profiles>
+        <!-- Separate profiles are provided for running tests, including Arquillian tests that execute in a specified container -->
         <profile>
-            <!-- An unit testing testing profile -->
-            <id>unit-test</id>
+            <!-- The default profile skips all tests, though you can tune it to run just unit tests based on a custom pattern -->
+            <id>default</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
@@ -291,39 +297,164 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${version-org.apache.maven-surefire-plugin}</version>
                         <configuration>
-                            <childDelegation>false</childDelegation>
-                            <useFile>true</useFile>
-                            <failIfNoTests>false</failIfNoTests>
-                            <rerunFailingTestsCount>0</rerunFailingTestsCount>
-                            <includes>
-                                <include>**/*Test.java</include>
-                            </includes>
-                            <argLine>-Djava.locale.providers=COMPAT</argLine>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <version>${version-org.apache.maven-war-plugin}</version>
+                        <configuration>
+                            <archive>
+                                <manifestEntries>
+                                    <Dependencies>org.jboss.msc</Dependencies>
+                                </manifestEntries>
+                            </archive>
+                            <webXml>${project.basedir}/src/main/webapp/WEB-INF/web.xml</webXml>
                         </configuration>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-
+        <profile>
+            <id>dev-workstation</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>${version-org.apache.maven-antrun-plugin}</version>
+                        <executions>
+                            <execution>
+                                <id>subsystem-config-file-copy</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo>ANT TASK - Copying Configuration files from
+                                            ${project.basedir}/install/kubernetes to
+                                            ${project.basedir}/target/classes
+                                        </echo>
+                                        <copy todir="${project.basedir}/target/classes/"
+                                              overwrite="true" flatten="true">
+                                            <fileset
+                                                    dir="${project.basedir}/install/kubernetes/">
+                                                <include name="systemconfig-*.yaml"/>
+                                            </fileset>
+                                        </copy>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>docker-config-build</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo>ANT TASK - Copying Docker files from
+                                            ${project.basedir}/src/main/docker to
+                                            ${project.basedir}/target/docker
+                                        </echo>
+                                        <copy todir="${project.basedir}/target/docker/"
+                                              overwrite="true" flatten="true">
+                                            <fileset
+                                                    dir="${project.basedir}/src/main/docker/">
+                                                <include name="*"/>
+                                            </fileset>
+                                        </copy>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>war-copy</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo>ANT TASK - Copying Docker build files from
+                                            ${project.basedir}/target/*.war to
+                                            ${project.basedir}/target/docker
+                                        </echo>
+                                        <copy todir="${project.basedir}/target/docker/"
+                                              overwrite="true" flatten="true">
+                                            <fileset
+                                                    dir="${project.basedir}/target/">
+                                                <include name="*.war"/>
+                                            </fileset>
+                                        </copy>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <executions>
+                            <execution>
+                                <id>build-docker-image</id>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <workingDirectory>${project.basedir}/target/docker/</workingDirectory>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>build</argument>
+                                        <argument>--rm</argument>
+                                        <argument>--build-arg</argument>
+                                        <argument>IMAGE_BUILD_TIMESTAMP=${maven.build.timestamp}</argument>
+                                        <argument>-t</argument>
+                                        <argument>localhost:32000/${project.artifactId}:${project.version}</argument>
+                                        <argument>--file</argument>
+                                        <argument>Dockerfile</argument>
+                                        <argument>${project.basedir}/target/docker/</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>push-image-to-repo</id>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <phase>install</phase>
+                                <configuration>
+                                    <workingDirectory>${project.basedir}/target/docker/</workingDirectory>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>push</argument>
+                                        <argument>localhost:32000/${project.artifactId}:${project.version}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <version>${version-org.apache.maven-war-plugin}</version>
+                        <configuration>
+                            <archive>
+                                <manifestEntries>
+                                    <Dependencies>org.jboss.msc</Dependencies>
+                                </manifestEntries>
+                            </archive>
+                            <webXml>${project.basedir}/src/main/webapp/WEB-INF/web.xml</webXml>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
-
-    <build>
-        <finalName>${project.artifactId}-${project.version}</finalName>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>${version-org.apache.maven-war-plugin}</version>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Dependencies>org.jboss.msc</Dependencies>
-                        </manifestEntries>
-                    </archive>
-                    <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

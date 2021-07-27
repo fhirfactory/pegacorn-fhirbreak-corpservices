@@ -34,6 +34,19 @@ public class LdapScannerConnection extends BaseLdapConnection {
 
 	
 	/**
+	 * Returns all LDAP entries.
+	 * 
+	 * @return
+	 * @throws LdapException
+	 * @throws CursorException
+	 * @throws IOException
+	 */
+	public List<PractitionerLdapEntry> getAll()  throws LdapException, CursorException, IOException {
+		return search(null);
+	}
+	
+	
+	/**
 	 * Returns a list of LDAP entries where the createTimestamp or the modifyTimestamp is >= the date supplied.
 	 * 
 	 * @param after
@@ -53,7 +66,10 @@ public class LdapScannerConnection extends BaseLdapConnection {
 	    searchRequest.addAttributes("*","+");
 	    searchRequest.setTimeLimit(0);
 	    searchRequest.setBase(new Dn(baseDN));
-	    searchRequest.setFilter("(|(createTimestamp >=" + DateUtils.getGeneralizedTime(after) +")(modifyTimestamp >=" + DateUtils.getGeneralizedTime(after) + "))");
+	    
+	    if (after != null) {
+	    	searchRequest.setFilter("(|(createTimestamp >=" + DateUtils.getGeneralizedTime(after) +")(modifyTimestamp >=" + DateUtils.getGeneralizedTime(after) + "))");
+	    }
 
 	    SearchCursor searchCursor = null;
 

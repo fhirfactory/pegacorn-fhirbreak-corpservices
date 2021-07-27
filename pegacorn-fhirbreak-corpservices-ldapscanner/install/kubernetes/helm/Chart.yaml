@@ -1,0 +1,5 @@
+---
+name: pegacorn-fhirbreak-ldapscanner
+version: 1.0.0-SNAPSHOT
+description: FHIRBREAK - LDAP Scanner
+icon: img/icons/camel.svg
