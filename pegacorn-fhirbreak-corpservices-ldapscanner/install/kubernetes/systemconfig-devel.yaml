@@ -64,7 +64,7 @@ jolokiaPort:
   server: true
   encrypted: false
 subsystemImageProperties:
-  repository: "localhost:32000"
+  repository: "localhost:32000/"
   imageName: "pegacorn-fhirbreak-ldapscanner"
   imageVersion: "1.0.0-SNAPSHOT"
   pullPolicy: "Always"
