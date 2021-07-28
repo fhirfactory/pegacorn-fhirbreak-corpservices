@@ -1,5 +1,0 @@
----
-name: pegacorn-fhirbreak-ldapsync
-version: 1.0.0-SNAPSHOT
-description: FHIRBREAK - LDAP Sync
-icon: img/icons/camel.svg
