@@ -57,7 +57,11 @@ public class Ldap2UoW {
 		
 		List<PractitionerLdapEntry>entries = ldapScannerConnection.search(null); //TODO get the after date from somewhere.
 		
+		LOG.info("Brendan.  Entries size: " + entries.size());
+		
+		
         UoWPayload emptyPayload = new UoWPayload();
+        emptyPayload.setPayloadManifest(manifest);
         
         UoW newUoW = new UoW(emptyPayload);
         

@@ -5,8 +5,6 @@ package net.fhirfactory.pegacorn.fhirbreak.corpservices.ldapscanner.workshops.in
 
 import javax.inject.Inject;
 
-import org.apache.camel.ExchangePattern;
-
 import net.fhirfactory.pegacorn.components.interfaces.topology.WorkshopInterface;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.ldapscanner.workshops.interact.beans.Ldap2UoW;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.MessageBasedWUPEndpoint;
@@ -32,7 +30,6 @@ public abstract class BaseLdapScannerWUP extends InteractIngresMessagingGatewayW
 	
 	@Override
 	protected MessageBasedWUPEndpoint specifyIngresEndpoint() {
-		// TODO Auto-generated method stub
 		return null;
 	}
     
@@ -53,16 +50,10 @@ public abstract class BaseLdapScannerWUP extends InteractIngresMessagingGatewayW
         //TODO add exception handling.
         
         from("quartz://" + getEndpointDiscriminator() + "?cron=" + getScanningCronExpression())
-        	.routeId(getNameSet().getRouteCoreWUP() + "LDAP-Scanner")  
+			.routeId(getNameSet().getRouteCoreWUP())
         	.bean(Ldap2UoW.class,"encapsulateLdapData")
-        	.to(ingresFeed());    
+            .to(ingresFeed());
 
-           
-	    from(ingresFeed())
-	        .routeId(getNameSet().getRouteCoreWUP())
-	        .to(ExchangePattern.InOnly, getProcessingRouteIngresPoint());
-    
-    
 	    fromInteractIngresService(ingresFeed())
 	    	.routeId(getNameSet().getRouteCoreWUP())
 	    	.bean(IngresActivityBeginRegistration.class, "registerActivityStart(*,  Exchange)")

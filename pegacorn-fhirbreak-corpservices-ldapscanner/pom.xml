@@ -14,7 +14,7 @@
     </parent>
 
 
-    <artifactId>pegacorn-fhirbreak-ldapscanner</artifactId>
+    <artifactId>pegacorn-fhirbreak-corpservices-ldapscanner</artifactId>
     <name>Pegacorn :: FHIRBreak :: LDAP Scanner</name>
     <description>Corpservices - LDAP Scanner</description>
     <packaging>jar</packaging>

@@ -3,8 +3,6 @@
  */
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.ldapscanner.workshops.interact;
 
-import javax.enterprise.context.ApplicationScoped;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,8 +12,7 @@ import org.slf4j.LoggerFactory;
  * @author Brendan Douglas
  *
  */
-@ApplicationScoped
-public class FullLdapScannerWUP extends BaseLdapScannerWUP {
+public abstract class FullLdapScannerWUP extends BaseLdapScannerWUP {
     private static final Logger LOG = LoggerFactory.getLogger(FullLdapScannerWUP.class);
     
     private String WUP_VERSION="1.0.0";

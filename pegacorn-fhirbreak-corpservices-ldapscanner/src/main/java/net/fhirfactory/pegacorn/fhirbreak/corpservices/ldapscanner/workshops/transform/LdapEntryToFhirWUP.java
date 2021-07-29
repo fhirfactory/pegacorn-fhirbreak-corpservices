@@ -25,7 +25,7 @@ import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessing
  * @author brendan_douglas_a
  *
  */
-public class LdapEntryToFhirWUP extends MOAStandardWUP {
+public abstract class LdapEntryToFhirWUP extends MOAStandardWUP {
 	
     private static final Logger LOG = LoggerFactory.getLogger(LdapEntryToFhirWUP.class);
     
