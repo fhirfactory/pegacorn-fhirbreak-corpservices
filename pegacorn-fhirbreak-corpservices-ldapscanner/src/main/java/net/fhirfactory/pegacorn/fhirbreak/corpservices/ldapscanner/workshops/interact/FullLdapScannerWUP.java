@@ -16,7 +16,6 @@ public abstract class FullLdapScannerWUP extends BaseLdapScannerWUP {
     private static final Logger LOG = LoggerFactory.getLogger(FullLdapScannerWUP.class);
     
     private String WUP_VERSION="1.0.0";
-    private static String WUP_INSTANCE_NAME = "FullLdapScannerHandlerWUP";
 
 	@Override
 	protected String getScanningCronExpression() {
@@ -33,14 +32,10 @@ public abstract class FullLdapScannerWUP extends BaseLdapScannerWUP {
 		return LOG;
 	}
 
-	@Override
-	protected String specifyWUPInstanceName() {
-		return WUP_INSTANCE_NAME;
-	}
 	
     @Override
     protected String specifyIngresTopologyEndpointName() {
-        return "full-scanning";
+        return "ldapServer";
     }
 
     @Override

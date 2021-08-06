@@ -42,18 +42,20 @@ public abstract class LdapEntryToFhirWUP extends MOAStandardWUP {
 	@Override
 	protected List<DataParcelManifest> specifySubscriptionTopics() {
 		DataParcelTypeDescriptor descriptor = new DataParcelTypeDescriptor();
-		descriptor.setDataParcelDiscriminatorType("ldap-entry");
-		
+		descriptor.setDataParcelDefiner("FHIRFactory");
+		descriptor.setDataParcelCategory("Operations");
+		descriptor.setDataParcelSubCategory("Practitioners");
+		descriptor.setDataParcelResource("LDAPRecord");
+
 		DataParcelManifest manifest = new DataParcelManifest();
 		manifest.setContentDescriptor(descriptor);
 		manifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INBOUND_DATA_PARCEL);
 		manifest.setDataParcelType(DataParcelTypeEnum.GENERAL_DATA_PARCEL_TYPE);
-		manifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_ANY);
-		manifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_FALSE);
-		manifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_FALSE);
-		manifest.setSourceSystem(DataParcelManifest.WILDCARD_CHARACTER);
-		manifest.setIntendedTargetSystem(DataParcelManifest.WILDCARD_CHARACTER);
-		manifest.setInterSubsystemDistributable(false);
+		manifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_NEGATIVE);
+		manifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
+		manifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
+		manifest.setSourceSystem("ACTGOV IDAM");
+		manifest.setInterSubsystemDistributable(false); 
 
 				
 		List<DataParcelManifest> subscribedTopics = new ArrayList<>();
@@ -80,6 +82,10 @@ public abstract class LdapEntryToFhirWUP extends MOAStandardWUP {
 
 	@Override
 	public void configure() throws Exception {
-
+		fromIncludingPetasosServices(this.ingresFeed())
+		 	.process(exchange -> {
+		 		specifyLogger().info("Brendan.  In transform WUP");
+		 	})
+		 .to(this.egressFeed());
 	}
 }

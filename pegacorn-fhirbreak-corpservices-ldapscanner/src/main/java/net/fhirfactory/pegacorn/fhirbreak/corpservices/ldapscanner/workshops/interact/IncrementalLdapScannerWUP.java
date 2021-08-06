@@ -16,7 +16,6 @@ public abstract class IncrementalLdapScannerWUP extends BaseLdapScannerWUP {
     private static final Logger LOG = LoggerFactory.getLogger(IncrementalLdapScannerWUP.class);
     
     private String WUP_VERSION="1.0.0";
-    private static String WUP_INSTANCE_NAME = "PartialLdapScannerHandlerWUP";
 
 	@Override
 	protected String getScanningCronExpression() {
@@ -32,15 +31,10 @@ public abstract class IncrementalLdapScannerWUP extends BaseLdapScannerWUP {
 	protected Logger specifyLogger() {
 		return LOG;
 	}
-
-	@Override
-	protected String specifyWUPInstanceName() {
-		return WUP_INSTANCE_NAME;
-	}
 	
     @Override
     protected String specifyIngresTopologyEndpointName() {
-        return "partial-scanning";
+        return "ldapServer";
     }
 
     @Override
