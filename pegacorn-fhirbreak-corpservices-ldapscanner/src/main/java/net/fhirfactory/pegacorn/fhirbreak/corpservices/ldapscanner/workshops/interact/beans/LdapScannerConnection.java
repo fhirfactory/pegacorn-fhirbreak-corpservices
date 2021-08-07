@@ -32,8 +32,7 @@ public class LdapScannerConnection extends BaseLdapConnection {
     private static final Logger LOG = LoggerFactory.getLogger(LdapScannerConnection.class);
 	
 	public LdapScannerConnection() throws LdapException {		
-		super(System.getenv("APACHEDS_HOST_NAME"), Integer.parseInt(System.getenv("APACHEDS_BASE_PORT")), true,  System.getenv("APACHEDS_CONNECT_NAME"), System.getenv("APACHEDS_CONNECT_CREDENTIAL"), "dc=practitioners,dc=com"); //TODO remove the dc=com from the partitition.
-
+		super(System.getenv("APACHEDS_HOST_NAME"), Integer.parseInt(System.getenv("APACHEDS_BASE_PORT")), true,  System.getenv("APACHEDS_CONNECT_NAME"), System.getenv("APACHEDS_CONNECT_CREDENTIAL"), System.getenv("APACHEDS_BASE_DN"));
 	}
 
 	

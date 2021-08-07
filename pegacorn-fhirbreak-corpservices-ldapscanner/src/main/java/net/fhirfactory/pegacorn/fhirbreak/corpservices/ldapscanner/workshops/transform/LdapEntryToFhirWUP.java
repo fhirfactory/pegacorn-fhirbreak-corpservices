@@ -16,6 +16,7 @@ import net.fhirfactory.pegacorn.components.dataparcel.valuesets.DataParcelTypeEn
 import net.fhirfactory.pegacorn.components.dataparcel.valuesets.DataParcelValidationStatusEnum;
 import net.fhirfactory.pegacorn.components.dataparcel.valuesets.PolicyEnforcementPointApprovalStatusEnum;
 import net.fhirfactory.pegacorn.components.interfaces.topology.WorkshopInterface;
+import net.fhirfactory.pegacorn.fhirbreak.corpservices.ldapscanner.workshops.transform.beans.PractitonerFHIRBundleBuilder;
 import net.fhirfactory.pegacorn.workshops.TransformWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.MOAStandardWUP;
 
@@ -33,6 +34,9 @@ public abstract class LdapEntryToFhirWUP extends MOAStandardWUP {
     
 	@Inject
 	private TransformWorkshop workshop;
+	
+	@Inject
+	private PractitonerFHIRBundleBuilder fhirBundleBuilder;
 
 	@Override
 	protected Logger specifyLogger() {
@@ -56,8 +60,7 @@ public abstract class LdapEntryToFhirWUP extends MOAStandardWUP {
 		manifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
 		manifest.setSourceSystem("ACTGOV IDAM");
 		manifest.setInterSubsystemDistributable(false); 
-
-				
+		
 		List<DataParcelManifest> subscribedTopics = new ArrayList<>();
 
         subscribedTopics.add(manifest);
@@ -83,9 +86,7 @@ public abstract class LdapEntryToFhirWUP extends MOAStandardWUP {
 	@Override
 	public void configure() throws Exception {
 		fromIncludingPetasosServices(this.ingresFeed())
-		 	.process(exchange -> {
-		 		specifyLogger().info("Brendan.  In transform WUP");
-		 	})
+         .bean(fhirBundleBuilder, "buildFHIRBundle")
 		 .to(this.egressFeed());
 	}
 }
