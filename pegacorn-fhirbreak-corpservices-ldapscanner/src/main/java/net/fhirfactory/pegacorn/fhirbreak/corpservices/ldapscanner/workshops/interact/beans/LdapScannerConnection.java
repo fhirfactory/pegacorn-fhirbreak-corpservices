@@ -19,7 +19,7 @@ import org.apache.directory.api.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.fhirfactory.pegacorn.buildingblocks.apacheds.BaseLdapConnection;
+import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.BaseLdapConnection;
 import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.PractitionerLdapEntry;
 
 /**

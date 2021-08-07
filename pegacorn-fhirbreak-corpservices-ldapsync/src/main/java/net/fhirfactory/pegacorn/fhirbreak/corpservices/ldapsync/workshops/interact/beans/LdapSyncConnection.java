@@ -14,7 +14,7 @@ import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.fhirfactory.pegacorn.buildingblocks.apacheds.BaseLdapConnection;
+import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.BaseLdapConnection;
 import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.LdapAttribute;
 import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.LdapAttributeNameEnum;
 import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.PractitionerLdapEntry;

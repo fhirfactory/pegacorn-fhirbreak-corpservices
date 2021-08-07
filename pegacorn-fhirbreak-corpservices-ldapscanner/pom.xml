@@ -66,12 +66,11 @@
             <version>${version-ca.uhn.hapi.fhir}</version>
         </dependency>
         
-        <dependency>
+         <dependency>
             <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-buildingblocks-apacheds</artifactId>
-            <type>jar</type>
+            <artifactId>pegacorn-buildingblocks-datamodels-fhir</artifactId>
+            <version>${version-pegacorn}</version>
             <scope>compile</scope>
-            <version>${project.version}</version>
         </dependency>
         
         <dependency>
