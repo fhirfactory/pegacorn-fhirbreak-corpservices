@@ -32,7 +32,7 @@ public class LdapScannerConnection extends BaseLdapConnection {
     private static final Logger LOG = LoggerFactory.getLogger(LdapScannerConnection.class);
 	
 	public LdapScannerConnection() throws LdapException {		
-		super(System.getenv("APACHEDS_HOST_NAME"), Integer.parseInt(System.getenv("APACHEDS_BASE_PORT")), true,  System.getenv("APACHEDS_CONNECT_NAME"), System.getenv("APACHEDS_CONNECT_CREDENTIAL"), System.getenv("APACHEDS_BASE_DN"));
+
 	}
 
 	
@@ -60,8 +60,7 @@ public class LdapScannerConnection extends BaseLdapConnection {
 	 * @throws IOException
 	 */
 	public List<PractitionerLdapEntry> search(Date after) throws LdapException, CursorException, IOException {	
-		getLogger().info("Brendan.  In search");
-		
+	
 		List<PractitionerLdapEntry>entries = new ArrayList<>();
 			
 		 // Create the SearchRequest object
@@ -90,7 +89,7 @@ public class LdapScannerConnection extends BaseLdapConnection {
 					
 					Entry resultEntry = ((SearchResultEntry) response).getEntry();
 					
-					PractitionerLdapEntry practitionerLdapEntry = new PractitionerLdapEntry(baseDN, resultEntry);
+					PractitionerLdapEntry practitionerLdapEntry = new PractitionerLdapEntry(resultEntry);
 					
 					entries.add(practitionerLdapEntry);
 		        }
@@ -108,18 +107,5 @@ public class LdapScannerConnection extends BaseLdapConnection {
 	@Override
 	public Logger getLogger() {
 		return LOG;
-	}
-	
-	
-	public static final void main(String[] args) {
-		try {
-			LdapScannerConnection ldap = new LdapScannerConnection();
-			
-			ldap.search(null);
-		} catch(Exception e) {
-			System.out.println(e);
-		}
-	}
-	
-	
+	}	
 }

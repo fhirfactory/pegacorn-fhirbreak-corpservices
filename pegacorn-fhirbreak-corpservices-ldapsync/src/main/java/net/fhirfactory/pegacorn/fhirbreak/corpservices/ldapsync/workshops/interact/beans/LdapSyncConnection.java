@@ -26,11 +26,12 @@ import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.PractitionerLdapE
  *
  */
 public class LdapSyncConnection extends BaseLdapConnection {
-	private static final Logger LOG = LoggerFactory.getLogger(LdapSyncConnection.class);
-
+	
 	public LdapSyncConnection() throws LdapException {
-		super(System.getenv("APACHEDS_HOST_NAME"), Integer.parseInt(System.getenv("APACHEDS_BASE_PORT")), true,  System.getenv("APACHEDS_CONNECT_NAME"), System.getenv("APACHEDS_CONNECT_CREDENTIAL"), System.getenv("APACHEDS_BASE_DN"));
 	}
+
+
+	private static final Logger LOG = LoggerFactory.getLogger(LdapSyncConnection.class);
 
 	
 	/**
@@ -42,7 +43,7 @@ public class LdapSyncConnection extends BaseLdapConnection {
 	public void addEntry(PractitionerLdapEntry newEntry) throws LdapException, IOException {
 				
 		try {
-			Entry entry = new DefaultEntry(newEntry.getDN(),
+			Entry entry = new DefaultEntry(newEntry.getDN(baseDN),
 		            "ObjectClass: 1.3.6.1.4.1.18060.17.2.5",
 		            "ObjectClass: top");
 			
@@ -80,7 +81,7 @@ public class LdapSyncConnection extends BaseLdapConnection {
 			connect();
 			
 			for (Modification modification : modifications) {
-				connection.modify(updatedEntry.getDN(), modification);
+				connection.modify(updatedEntry.getDN(baseDN), modification);
 			}
 
 		} finally {
