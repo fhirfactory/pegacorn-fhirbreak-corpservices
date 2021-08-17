@@ -47,10 +47,10 @@ public class Ldap2UoW {
 		manifest.setContentDescriptor(descriptor);
 		manifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INBOUND_DATA_PARCEL);
 		manifest.setDataParcelType(DataParcelTypeEnum.GENERAL_DATA_PARCEL_TYPE);
-		manifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_NEGATIVE);
+		manifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_POSITIVE);
 		manifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
 		manifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
-		manifest.setSourceSystem("ACTGOV IDAM");
+		manifest.setSourceSystem("aether-fhirbreak-ldapscanner");
 		manifest.setInterSubsystemDistributable(false); 
 
         UoWPayload emptyPayload = new UoWPayload();
