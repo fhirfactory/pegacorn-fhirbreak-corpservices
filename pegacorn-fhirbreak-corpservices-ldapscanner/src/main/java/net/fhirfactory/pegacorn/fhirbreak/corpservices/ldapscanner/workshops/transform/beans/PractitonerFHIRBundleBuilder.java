@@ -83,6 +83,7 @@ public class PractitonerFHIRBundleBuilder {
         JSONObject jsonLdapEntry = new JSONObject(incomingUoW.getIngresContent().getPayload());
         PractitionerLdapEntry ldapEntry = new PractitionerLdapEntry("dc=practitioners,dc=com", jsonLdapEntry); 
        
+        // Create all the resources from a single LDAP entry.
         Practitioner practitioner = createPractitioner(ldapEntry);
         List<ContactPoint> contactPoints = createContactPoints(ldapEntry);
         List<Organization> organization = createOrganizationStructure(ldapEntry); 
@@ -92,12 +93,23 @@ public class PractitonerFHIRBundleBuilder {
         resources.add(practitioner);
         resources.addAll(organization);
         resources.add(practitionerRole);
-              
+       
+
+        
+        // Create a bundle.
         Bundle fhirBundle = new Bundle();
         fhirBundle.setIdentifier(constuctBundleIdentifier());
         fhirBundle.setType(Bundle.BundleType.MESSAGE);
         fhirBundle.setTimestamp(Date.from(Instant.now()));
         
+     
+        // Add all the resources to the bundle.
+        for (Resource resource : resources) {
+        	fhirBundle.addEntry(createBundleEntry(resource));
+        }
+        
+        
+        // Add the bundle to a UoW.
         IParser fhirResourceParser = fhirContextUtility.getJsonParser().setPrettyPrint(true);
         String payloadAsString = fhirResourceParser.encodeResourceToString(fhirBundle);
         
@@ -120,7 +132,7 @@ public class PractitonerFHIRBundleBuilder {
         UoWPayload contentPayload = new UoWPayload();
         
         contentPayload.setPayloadManifest(manifest);
-        contentPayload.setPayload(practitioner.getNameFirstRep().getGivenAsSingleString());
+        contentPayload.setPayload(payloadAsString);
         
         UoW newUoW = new UoW(incomingUoW);
         
@@ -130,6 +142,14 @@ public class PractitonerFHIRBundleBuilder {
         
         return newUoW;
 	}
+    
+    
+    private Bundle.BundleEntryComponent createBundleEntry(Resource resource) {
+        Bundle.BundleEntryComponent bundleEntry = new Bundle.BundleEntryComponent();
+        bundleEntry.setResource(resource);
+        
+        return bundleEntry;
+    }
 
     
     protected Identifier constuctBundleIdentifier() {
@@ -165,7 +185,7 @@ public class PractitonerFHIRBundleBuilder {
     private Practitioner createPractitioner(PractitionerLdapEntry ldapEntry) {
     	HumanName humanName = practitionerResourceHelper.constructHumanName(ldapEntry.getGivenName().getValue(), ldapEntry.getSurname().getValue(), null, ldapEntry.getPersonalTitle().getValue(), ldapEntry.getSuffix().getValue(), NameUse.OFFICIAL);
     	Identifier emailIdentifier = practitionerResourceHelper.buildPractitionerIdentifierFromEmail(ldapEntry.getEmailAddress().getValue());
-    	
+   
     	return practitionerFactory.buildPractitioner(humanName, emailIdentifier);
     }
     
