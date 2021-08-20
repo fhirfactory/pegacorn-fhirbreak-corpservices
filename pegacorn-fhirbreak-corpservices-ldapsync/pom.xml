@@ -166,6 +166,15 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
+        
+        <!-- Pegacorn Common Code -->
+        <dependency>
+            <groupId>net.fhirfactory.pegacorn</groupId>
+            <artifactId>pegacorn-platform-commoncode</artifactId>
+            <type>jar</type>
+            <scope>compile</scope>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- logging -->
         <dependency>
@@ -203,7 +212,6 @@
             <version>${version-org.json}</version>
             <scope>compile</scope>
         </dependency>
-
 
         <!-- Test Dependencies -->
         <dependency>

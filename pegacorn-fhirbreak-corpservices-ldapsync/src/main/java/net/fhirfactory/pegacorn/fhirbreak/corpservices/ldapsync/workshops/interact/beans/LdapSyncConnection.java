@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.directory.api.ldap.model.cursor.CursorException;
 import org.apache.directory.api.ldap.model.entry.DefaultEntry;
 import org.apache.directory.api.ldap.model.entry.DefaultModification;
 import org.apache.directory.api.ldap.model.entry.Entry;
@@ -40,20 +41,29 @@ public class LdapSyncConnection extends BaseLdapConnection {
 	 * @param newEntry
 	 * @throws LdapException
 	 */
-	public void addEntry(PractitionerLdapEntry newEntry) throws LdapException, IOException {
+	public void addEntry(PractitionerLdapEntry newEntry, boolean overrideIfExists) throws LdapException, IOException, CursorException {
 				
 		try {
+			connect();
+			
+			boolean exists = exists(newEntry.getEmailAddress().getValue());
+			LOG.info("Brendan.  exists: {}", exists);
+			
+			// Delete an existing entry if required before adding.
+			if (overrideIfExists && exists) {
+				deleteEntry(newEntry.getDN(System.getenv("APACHEDS_BASE_DN")));
+			}
+			
 			Entry entry = new DefaultEntry(newEntry.getDN(baseDN),
 		            "ObjectClass: 1.3.6.1.4.1.18060.17.2.5",
 		            "ObjectClass: top");
 			
-			for (Map.Entry<LdapAttributeNameEnum, LdapAttribute> attribute : newEntry.getAttributes().entrySet()) {
+			for (Map.Entry<LdapAttributeNameEnum, LdapAttribute> attribute : newEntry.getAttributes().entrySet()) {				
 		        entry.add(attribute.getKey().getName(), attribute.getValue().getValue());
 			}
 			
 			entry.add("cn", newEntry.getCommonName());
 			
-			connect();
 			
 			connection.add(entry);
 			
@@ -61,7 +71,12 @@ public class LdapSyncConnection extends BaseLdapConnection {
 			close();
 		}
 	}
-
+	
+	
+	public void addEntry(PractitionerLdapEntry newEntry) throws LdapException, IOException, CursorException {
+		addEntry(newEntry, false);
+	}
+	
 	
 	/**
 	 * Modify a practitioner entry.
@@ -88,8 +103,13 @@ public class LdapSyncConnection extends BaseLdapConnection {
 			close();
 		}
 	}
-
-
+	
+	
+	public void deleteEntry(String dn) throws LdapException {	
+		connection.delete(dn);
+	}
+	
+	
 	@Override
 	public Logger getLogger() {
 		return LOG;

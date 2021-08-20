@@ -16,6 +16,7 @@ import net.fhirfactory.pegacorn.components.dataparcel.valuesets.DataParcelTypeEn
 import net.fhirfactory.pegacorn.components.dataparcel.valuesets.DataParcelValidationStatusEnum;
 import net.fhirfactory.pegacorn.components.dataparcel.valuesets.PolicyEnforcementPointApprovalStatusEnum;
 import net.fhirfactory.pegacorn.components.interfaces.topology.WorkshopInterface;
+import net.fhirfactory.pegacorn.fhirbreak.corpservices.ldapsync.workshops.transform.bean.TransformFhirToLdapEntry;
 import net.fhirfactory.pegacorn.workshops.TransformWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.MOAStandardWUP;
 
@@ -33,6 +34,9 @@ public abstract class FhirToLdapEntryWUP extends MOAStandardWUP {
     
 	@Inject
 	private TransformWorkshop workshop;
+	
+	@Inject
+	private TransformFhirToLdapEntry fhirToUoW;
 
 	@Override
 	protected Logger specifyLogger() {
@@ -84,9 +88,8 @@ public abstract class FhirToLdapEntryWUP extends MOAStandardWUP {
 	@Override
 	public void configure() throws Exception {
 		fromIncludingPetasosServices(this.ingresFeed())
-			.process(exchange -> {
-				LOG.info("Brendan.  In LDAP Sync");
-			});
+			.bean(fhirToUoW, "convert")
+			.to(this.egressFeed());
 	}
 	
 	protected abstract String getSourceSystem();
