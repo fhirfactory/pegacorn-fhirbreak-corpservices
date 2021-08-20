@@ -15,11 +15,13 @@ import org.slf4j.LoggerFactory;
 public abstract class IncrementalLdapScannerWUP extends BaseLdapScannerWUP {
     private static final Logger LOG = LoggerFactory.getLogger(IncrementalLdapScannerWUP.class);
     
-    private String WUP_VERSION="1.0.0";
+    private String WUP_VERSION="1.0.0";    
+    
+    private String cronExpression = System.getenv("INCREMENTAL_SCAN_CRON_EXPRESSION"); 
 
 	@Override
 	protected String getScanningCronExpression() {
-		return "0 0/1 * 1/1 * ? *"; //TODO this will not be hardcoded
+		return cronExpression;
 	}
 
 	@Override

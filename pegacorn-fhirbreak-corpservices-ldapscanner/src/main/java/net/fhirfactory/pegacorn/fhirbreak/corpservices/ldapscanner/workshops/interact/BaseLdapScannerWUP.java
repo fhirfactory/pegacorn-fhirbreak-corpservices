@@ -31,9 +31,6 @@ public abstract class BaseLdapScannerWUP extends InteractIngresAPIClientGatewayW
 	@Inject
 	private InteractWorkshop interactWorkshop;
 
-	
-    
-    
 	@Override
 	protected WorkshopInterface specifyWorkshop() {
 		return interactWorkshop;

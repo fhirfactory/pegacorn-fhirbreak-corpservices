@@ -16,10 +16,12 @@ public abstract class FullLdapScannerWUP extends BaseLdapScannerWUP {
     private static final Logger LOG = LoggerFactory.getLogger(FullLdapScannerWUP.class);
     
     private String WUP_VERSION="1.0.0";
+    
+    private String cronExpression = System.getenv("FULL_SCAN_CRON_EXPRESSION"); 
 
 	@Override
 	protected String getScanningCronExpression() {
-		return "0 0/5 * 1/1 * ? *"; //TODO this will not be hardcoded
+		return cronExpression;
 	}
 
 	@Override
