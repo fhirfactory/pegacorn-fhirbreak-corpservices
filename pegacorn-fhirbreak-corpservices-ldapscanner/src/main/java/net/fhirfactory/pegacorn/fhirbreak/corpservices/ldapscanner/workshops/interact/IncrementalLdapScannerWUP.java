@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A partial LDAP scanner WUP.  This WUP will read only the entries updated/creates since the last read.
+ * An incremental LDAP scanner WUP.  This WUP will read only the entries updated/creates since the last read.
  * 
  * @author Brendan Douglas
  *
@@ -26,7 +26,7 @@ public abstract class IncrementalLdapScannerWUP extends BaseLdapScannerWUP {
 
 	@Override
 	protected String getEndpointDiscriminator() {
-		return "partial-scanning";
+		return "incremental-scanning";
 	}
 	
 	@Override

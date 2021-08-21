@@ -58,6 +58,7 @@ public class Ldap2UoW {
         
         UoW newUoW = new UoW(emptyPayload);
         
+        // Add a entry as a unit of work payload.
         for (PractitionerLdapEntry entry : entries) {            
             UoWPayload contentPayload = new UoWPayload();
         

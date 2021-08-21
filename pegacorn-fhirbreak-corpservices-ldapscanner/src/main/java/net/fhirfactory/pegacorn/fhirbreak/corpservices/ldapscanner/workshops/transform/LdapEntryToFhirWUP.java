@@ -42,6 +42,8 @@ public abstract class LdapEntryToFhirWUP extends MOAStandardWUP {
 	protected Logger specifyLogger() {
 		return LOG;
 	}
+	
+	protected abstract String getSourceSystem();
 
 	@Override
 	protected List<DataParcelManifest> specifySubscriptionTopics() {
@@ -58,7 +60,7 @@ public abstract class LdapEntryToFhirWUP extends MOAStandardWUP {
 		manifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_POSITIVE);
 		manifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
 		manifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
-		manifest.setSourceSystem("aether-fhirbreak-ldapscanner");
+		manifest.setSourceSystem(getSourceSystem());
 		manifest.setInterSubsystemDistributable(false); 
 		
 		List<DataParcelManifest> subscribedTopics = new ArrayList<>();

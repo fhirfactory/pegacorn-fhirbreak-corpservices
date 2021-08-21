@@ -46,11 +46,20 @@ import net.fhirfactory.pegacorn.internals.fhir.r4.resources.organization.factori
 import net.fhirfactory.pegacorn.internals.fhir.r4.resources.organization.factories.OrganizationResourceHelpers;
 import net.fhirfactory.pegacorn.internals.fhir.r4.resources.practitioner.factories.PractitionerFactory;
 import net.fhirfactory.pegacorn.internals.fhir.r4.resources.practitioner.factories.PractitionerResourceHelpers;
+import net.fhirfactory.pegacorn.internals.fhir.r4.resources.practitionerrole.factories.PractitionerRoleFactory;
+import net.fhirfactory.pegacorn.internals.fhir.r4.resources.practitionerrole.factories.PractitionerRoleResourceHelper;
+import net.fhirfactory.pegacorn.internals.fhir.r4.resources.practitionerrole.factories.RoleFactory;
 import net.fhirfactory.pegacorn.internals.fhir.r4.resources.resource.datatypes.ContactPointFactory;
 import net.fhirfactory.pegacorn.petasos.model.uow.UoW;
 import net.fhirfactory.pegacorn.petasos.model.uow.UoWPayload;
 import net.fhirfactory.pegacorn.util.FHIRContextUtility;
 
+/**
+ * Create FHIR resoures from a single LDAP entry and adds them to a bundle.
+ * 
+ * @author Brendan Douglas
+ *
+ */
 @ApplicationScoped
 public class PractitonerFHIRBundleBuilder {
 	
@@ -76,12 +85,21 @@ public class PractitonerFHIRBundleBuilder {
     
     @Inject
     private FHIRContextUtility fhirContextUtility;
+   
+    @Inject
+    private PractitionerRoleFactory practitionerRoleFactory;
+    
+    @Inject
+    private RoleFactory roleFactory;
+    
+    @Inject
+    private PractitionerRoleResourceHelper practitionerRoleResourceHelper;
     
     public UoW buildFHIRBundle(UoW incomingUoW) {
 		
 		// The UoW contains a JSON representation of the LDAP entry.  Retrieve this and convert.
         JSONObject jsonLdapEntry = new JSONObject(incomingUoW.getIngresContent().getPayload());
-        PractitionerLdapEntry ldapEntry = new PractitionerLdapEntry("dc=practitioners,dc=com", jsonLdapEntry); 
+        PractitionerLdapEntry ldapEntry = new PractitionerLdapEntry(System.getenv("LDAP_SERVER_BASE_DN"), jsonLdapEntry); 
        
         // Create all the resources from a single LDAP entry.
         Practitioner practitioner = createPractitioner(ldapEntry);
@@ -137,9 +155,7 @@ public class PractitonerFHIRBundleBuilder {
         UoW newUoW = new UoW(incomingUoW);
         
         newUoW.getEgressContent().addPayloadElement(contentPayload);
-            
-        LOG.info("Brendan:.  Practitioner name: {}", practitioner.getNameFirstRep().getGivenAsSingleString());
-        
+                   
         return newUoW;
 	}
     
@@ -182,43 +198,81 @@ public class PractitonerFHIRBundleBuilder {
     }
 
     
+    /**
+     * Create the practitioner
+     * 
+     * @param ldapEntry
+     * @return
+     */
     private Practitioner createPractitioner(PractitionerLdapEntry ldapEntry) {
-    	HumanName humanName = practitionerResourceHelper.constructHumanName(ldapEntry.getGivenName().getValue(), ldapEntry.getSurname().getValue(), null, ldapEntry.getPersonalTitle().getValue(), ldapEntry.getSuffix().getValue(), NameUse.OFFICIAL);
-    	Identifier emailIdentifier = practitionerResourceHelper.buildPractitionerIdentifierFromEmail(ldapEntry.getEmailAddress().getValue());
+    	HumanName humanName = practitionerResourceHelper.constructHumanName(ldapEntry.getGivenName(), ldapEntry.getSurname(), null, ldapEntry.getPersonalTitle(), ldapEntry.getSuffix(), NameUse.OFFICIAL);
+    	Identifier emailIdentifier = practitionerResourceHelper.buildPractitionerIdentifierFromEmail(ldapEntry.getEmailAddress());
    
     	return practitionerFactory.buildPractitioner(humanName, emailIdentifier);
     }
     
     
+    /**
+     * Create the contact points
+     * 
+     * @param ldapEntry
+     * @return
+     */
     public List<ContactPoint> createContactPoints(PractitionerLdapEntry ldapEntry) {
     	List<ContactPoint> contactPoints = new ArrayList<>();
     	
-    	contactPoints.add(contactPointFactory.buildContactPoint(ldapEntry.getMobileNumber().getValue(), ContactPointUse.WORK, ContactPointSystem.PHONE, 0));
-    	contactPoints.add(contactPointFactory.buildContactPoint(ldapEntry.getPhoneNumber().getValue(), ContactPointUse.WORK, ContactPointSystem.PHONE, 1));
-    	contactPoints.add(contactPointFactory.buildContactPoint(ldapEntry.getPager().getValue(), ContactPointUse.WORK, ContactPointSystem.PAGER, 2));
+    	contactPoints.add(contactPointFactory.buildContactPoint(ldapEntry.getMobileNumber(), ContactPointUse.WORK, ContactPointSystem.PHONE, 0));
+    	contactPoints.add(contactPointFactory.buildContactPoint(ldapEntry.getPhoneNumber(), ContactPointUse.WORK, ContactPointSystem.PHONE, 1));
+    	contactPoints.add(contactPointFactory.buildContactPoint(ldapEntry.getPager(), ContactPointUse.WORK, ContactPointSystem.PAGER, 2));
     	
     	return contactPoints;
     }
     
     
+    /**
+     * Create the organisational structure.
+     * 
+     * @param ldapEntry
+     * @return
+     */
     public List<Organization> createOrganizationStructure(PractitionerLdapEntry ldapEntry) {    	
     	List<Organization> organizationStructure = new ArrayList<>();    
   
-    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getDivision().getValue(), OrganizationType.OTHER, null));
-    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getBranch().getValue(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getDivision().getValue(), IdentifierUse.OFFICIAL)));
-    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getSubSection().getValue(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getBranch().getValue(), IdentifierUse.OFFICIAL)));
-    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getSection().getValue(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getSubSection().getValue(), IdentifierUse.OFFICIAL)));
+    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getDivision(), OrganizationType.OTHER, null));
+    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getBranch(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getDivision(), IdentifierUse.OFFICIAL)));
+    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getSubSection(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getBranch(), IdentifierUse.OFFICIAL)));
+    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getSection(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getSubSection(), IdentifierUse.OFFICIAL)));
  //   	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getBusinessUnit().getValue(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getSection().getValue(), IdentifierUse.OFFICIAL)));
     	
     	return organizationStructure;
     }
     
     
+    /**
+     * Create the practitioner role
+     * 
+     * @param ldapEntry
+     * @param practitioner
+     * @return
+     */
     public PractitionerRole createPractitionerRole(PractitionerLdapEntry ldapEntry, Practitioner practitioner) {
-    	PractitionerRole practitionerRole = new PractitionerRole();
+    	CodeableConcept roleCodeableConcept = roleFactory.buildRole(ldapEntry.getJobTitle());
     	
-    	practitionerRole.setPractitionerTarget(practitioner);
-    	practitionerRole.addCode().addCoding().setDisplay(ldapEntry.getJobTitle().getValue());
+    	// Build the identifier
+    	Identifier practitionerRoleIdentifier = practitionerRoleResourceHelper.buildIdentifierFromShortName(ldapEntry.getJobTitle());
+    	
+    	// Build the reference
+    	Reference practitionerRoleReference = practitionerRoleResourceHelper.buildPractitionerRoleReference(practitionerRoleIdentifier.getValue());
+    	
+    	
+    	// Build the practitioner role
+    	List<CodeableConcept>codeableConcepts = new ArrayList<>();
+    	codeableConcepts.add(roleCodeableConcept);
+    	PractitionerRole practitionerRole = practitionerRoleFactory.buildPractitionerRole(ldapEntry.getJobTitle(), ldapEntry.getJobTitle(), codeableConcepts);
+   	
+    	
+    	// Associate the practitioner role with the practitioner
+    	// ?????????????????
     	
     	return practitionerRole;	
     }

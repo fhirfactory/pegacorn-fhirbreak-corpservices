@@ -81,7 +81,7 @@ public class TransformFhirToLdapEntry {
 	
 	
 	private PractitionerLdapEntry createLdapEntryFromBundle(Bundle bundle) {
-		PractitionerLdapEntry ldapEntry = new PractitionerLdapEntry();
+		PractitionerLdapEntry ldapEntry = new PractitionerLdapEntry(System.getenv("LDAP_SERVER_BASE_DN"));
 	
 		Practitioner practitioner = null;
 		List<ContactPoint> contactPoints = new ArrayList<>();
@@ -105,9 +105,7 @@ public class TransformFhirToLdapEntry {
         ldapEntry.setSurname(practitioner.getNameFirstRep().getFamily());
         ldapEntry.setSuffix(practitioner.getNameFirstRep().getSuffixAsSingleString());
         ldapEntry.setPersonalTitle(practitioner.getNameFirstRep().getPrefixAsSingleString());
-        
-        LOG.info("Brendan.  email address: {}", ldapEntry.getEmailAddress().getValue());
-        
+                
 		return ldapEntry;
 	}
 }

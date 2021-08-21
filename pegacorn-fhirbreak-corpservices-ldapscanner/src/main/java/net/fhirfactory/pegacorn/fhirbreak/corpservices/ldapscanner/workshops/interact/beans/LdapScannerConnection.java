@@ -89,7 +89,7 @@ public class LdapScannerConnection extends BaseLdapConnection {
 					
 					Entry resultEntry = ((SearchResultEntry) response).getEntry();
 					
-					PractitionerLdapEntry practitionerLdapEntry = new PractitionerLdapEntry(resultEntry);
+					PractitionerLdapEntry practitionerLdapEntry = new PractitionerLdapEntry(resultEntry, baseDN);
 					
 					entries.add(practitionerLdapEntry);
 		        }

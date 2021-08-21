@@ -45,16 +45,15 @@ public class LdapSyncConnection extends BaseLdapConnection {
 				
 		try {
 			connect();
-			
-			boolean exists = exists(newEntry.getEmailAddress().getValue());
-			LOG.info("Brendan.  exists: {}", exists);
-			
+					
 			// Delete an existing entry if required before adding.
-			if (overrideIfExists && exists) {
-				deleteEntry(newEntry.getDN(System.getenv("APACHEDS_BASE_DN")));
+			if (overrideIfExists && exists(newEntry.getEmailAddress())) {
+				deleteEntry(newEntry.getDN());
 			}
 			
-			Entry entry = new DefaultEntry(newEntry.getDN(baseDN),
+			LOG.info("Brendan entry dn: {}", newEntry.getDN());
+			
+			Entry entry = new DefaultEntry(newEntry.getDN(),
 		            "ObjectClass: 1.3.6.1.4.1.18060.17.2.5",
 		            "ObjectClass: top");
 			
@@ -96,7 +95,7 @@ public class LdapSyncConnection extends BaseLdapConnection {
 			connect();
 			
 			for (Modification modification : modifications) {
-				connection.modify(updatedEntry.getDN(baseDN), modification);
+				connection.modify(updatedEntry.getDN(), modification);
 			}
 
 		} finally {

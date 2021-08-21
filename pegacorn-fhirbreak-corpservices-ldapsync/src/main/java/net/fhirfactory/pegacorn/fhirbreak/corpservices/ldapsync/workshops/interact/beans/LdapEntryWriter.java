@@ -28,9 +28,9 @@ public class LdapEntryWriter {
 		
 		LOG.info("Brendan.  The json: {}", ldapEntryJson.toString());
 		
-		PractitionerLdapEntry ldapEntry = new PractitionerLdapEntry(System.getenv("APACHEDS_BASE_DN"), ldapEntryJson);
+		PractitionerLdapEntry ldapEntry = new PractitionerLdapEntry(System.getenv("LDAP_SERVER_BASE_DN"), ldapEntryJson);
 		
-		LOG.info("Brendan.  In writer email address: {}", ldapEntry.getEmailAddress().getValue());
+		LOG.info("Brendan.  In writer email address: {}", ldapEntry.getEmailAddress());
 		
 		LdapSyncConnection connection = new LdapSyncConnection();
 		
