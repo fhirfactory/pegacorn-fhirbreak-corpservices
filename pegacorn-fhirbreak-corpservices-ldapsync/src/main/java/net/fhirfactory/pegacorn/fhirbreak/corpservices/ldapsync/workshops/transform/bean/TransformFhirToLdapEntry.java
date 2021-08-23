@@ -157,7 +157,14 @@ public class TransformFhirToLdapEntry {
         }
         
         // Populate the organisational structure details.
-        Reference subsectionReference = practitionerRole.getOrganization();
+        
+        // Get the business unit.
+        Reference businessUnitReference = practitionerRole.getOrganization();
+        Organization businessUnit = (Organization)getOrganisationComponent(businessUnitReference, organizations);
+        ldapEntry.setBusinessUnit(businessUnit.getName());
+        
+        // Get the subsection
+        Reference subsectionReference = businessUnit.getPartOf();
         Organization subsection = (Organization)getOrganisationComponent(subsectionReference, organizations);
         ldapEntry.setSubSection(subsection.getName());
         

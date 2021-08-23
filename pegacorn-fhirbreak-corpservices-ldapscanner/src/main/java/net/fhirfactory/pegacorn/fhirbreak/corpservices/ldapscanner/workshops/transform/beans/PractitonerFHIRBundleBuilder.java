@@ -105,7 +105,7 @@ public class PractitonerFHIRBundleBuilder {
         Practitioner practitioner = createPractitioner(ldapEntry);
         List<ContactPoint> contactPoints = createContactPoints(ldapEntry);
         List<Organization> organization = createOrganizationStructure(ldapEntry); 
-        PractitionerRole practitionerRole = createPractitionerRole(ldapEntry, practitioner, contactPoints, organization.get(3));
+        PractitionerRole practitionerRole = createPractitionerRole(ldapEntry, practitioner, contactPoints, organization.get(4));
         
         List<Resource>resources = new ArrayList<>();
         resources.add(practitioner);
@@ -254,6 +254,7 @@ public class PractitonerFHIRBundleBuilder {
     	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getBranch(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getDivision(), IdentifierUse.OFFICIAL)));
     	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getSection(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getBranch(), IdentifierUse.OFFICIAL)));
     	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getSubSection(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getSection(), IdentifierUse.OFFICIAL)));
+    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getBusinessUnit(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getSubSection(), IdentifierUse.OFFICIAL)));
     	
     	return organizationStructure;
     }
