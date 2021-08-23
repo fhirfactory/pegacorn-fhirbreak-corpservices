@@ -62,6 +62,7 @@ public class LdapSyncConnection extends BaseLdapConnection {
 			}
 			
 			entry.add("cn", newEntry.getCommonName());
+			entry.add("displayName", newEntry.getCommonName());
 			
 			
 			connection.add(entry);

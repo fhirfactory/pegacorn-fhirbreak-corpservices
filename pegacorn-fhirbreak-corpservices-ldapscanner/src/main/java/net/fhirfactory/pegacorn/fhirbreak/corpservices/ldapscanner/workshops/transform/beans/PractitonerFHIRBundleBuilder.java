@@ -105,7 +105,7 @@ public class PractitonerFHIRBundleBuilder {
         Practitioner practitioner = createPractitioner(ldapEntry);
         List<ContactPoint> contactPoints = createContactPoints(ldapEntry);
         List<Organization> organization = createOrganizationStructure(ldapEntry); 
-        PractitionerRole practitionerRole = createPractitionerRole(ldapEntry, practitioner);
+        PractitionerRole practitionerRole = createPractitionerRole(ldapEntry, practitioner, contactPoints, organization.get(3));
         
         List<Resource>resources = new ArrayList<>();
         resources.add(practitioner);
@@ -113,7 +113,6 @@ public class PractitonerFHIRBundleBuilder {
         resources.add(practitionerRole);
        
 
-        
         // Create a bundle.
         Bundle fhirBundle = new Bundle();
         fhirBundle.setIdentifier(constuctBundleIdentifier());
@@ -205,10 +204,23 @@ public class PractitonerFHIRBundleBuilder {
      * @return
      */
     private Practitioner createPractitioner(PractitionerLdapEntry ldapEntry) {
-    	HumanName humanName = practitionerResourceHelper.constructHumanName(ldapEntry.getGivenName(), ldapEntry.getSurname(), null, ldapEntry.getPersonalTitle(), ldapEntry.getSuffix(), NameUse.OFFICIAL);
+    	HumanName officalHumanName = practitionerResourceHelper.constructHumanName(ldapEntry.getGivenName(), ldapEntry.getSurname(), null, ldapEntry.getPersonalTitle(), ldapEntry.getSuffix(), NameUse.OFFICIAL);
     	Identifier emailIdentifier = practitionerResourceHelper.buildPractitionerIdentifierFromEmail(ldapEntry.getEmailAddress());
-   
-    	return practitionerFactory.buildPractitioner(humanName, emailIdentifier);
+    	HumanName preferredHumanName = practitionerResourceHelper.constructHumanName(ldapEntry.getPreferredName(), ldapEntry.getSurname(), null, ldapEntry.getPersonalTitle(), ldapEntry.getSuffix(), NameUse.USUAL);
+    	
+    	Practitioner practitioner = practitionerFactory.buildPractitioner(officalHumanName, emailIdentifier);
+   	
+    	practitioner.addName(preferredHumanName);
+    	
+    	Identifier ags = createAdditionalPractitionerIdentifiers(ldapEntry.getAgsNumber(), "AGS");
+    	Identifier gs1 = createAdditionalPractitionerIdentifiers(ldapEntry.getGS1(), "GS1");
+    	Identifier irn = createAdditionalPractitionerIdentifiers(ldapEntry.getIRN(), "IRN");
+    	
+    	practitioner.addIdentifier(ags);
+    	practitioner.addIdentifier(gs1);
+    	practitioner.addIdentifier(irn);
+    	
+    	return practitioner;
     }
     
     
@@ -221,7 +233,7 @@ public class PractitonerFHIRBundleBuilder {
     public List<ContactPoint> createContactPoints(PractitionerLdapEntry ldapEntry) {
     	List<ContactPoint> contactPoints = new ArrayList<>();
     	
-    	contactPoints.add(contactPointFactory.buildContactPoint(ldapEntry.getMobileNumber(), ContactPointUse.WORK, ContactPointSystem.PHONE, 0));
+    	contactPoints.add(contactPointFactory.buildContactPoint(ldapEntry.getMobileNumber(), ContactPointUse.WORK, ContactPointSystem.SMS, 0));
     	contactPoints.add(contactPointFactory.buildContactPoint(ldapEntry.getPhoneNumber(), ContactPointUse.WORK, ContactPointSystem.PHONE, 1));
     	contactPoints.add(contactPointFactory.buildContactPoint(ldapEntry.getPager(), ContactPointUse.WORK, ContactPointSystem.PAGER, 2));
     	
@@ -240,9 +252,8 @@ public class PractitonerFHIRBundleBuilder {
   
     	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getDivision(), OrganizationType.OTHER, null));
     	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getBranch(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getDivision(), IdentifierUse.OFFICIAL)));
-    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getSubSection(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getBranch(), IdentifierUse.OFFICIAL)));
-    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getSection(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getSubSection(), IdentifierUse.OFFICIAL)));
- //   	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getBusinessUnit().getValue(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getSection().getValue(), IdentifierUse.OFFICIAL)));
+    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getSection(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getBranch(), IdentifierUse.OFFICIAL)));
+    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getSubSection(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getSection(), IdentifierUse.OFFICIAL)));
     	
     	return organizationStructure;
     }
@@ -255,25 +266,52 @@ public class PractitonerFHIRBundleBuilder {
      * @param practitioner
      * @return
      */
-    public PractitionerRole createPractitionerRole(PractitionerLdapEntry ldapEntry, Practitioner practitioner) {
+    public PractitionerRole createPractitionerRole(PractitionerLdapEntry ldapEntry, Practitioner practitioner, List<ContactPoint> contactPoints, Organization organisation) {
     	CodeableConcept roleCodeableConcept = roleFactory.buildRole(ldapEntry.getJobTitle());
-    	
-    	// Build the identifier
-    	Identifier practitionerRoleIdentifier = practitionerRoleResourceHelper.buildIdentifierFromShortName(ldapEntry.getJobTitle());
-    	
-    	// Build the reference
-    	Reference practitionerRoleReference = practitionerRoleResourceHelper.buildPractitionerRoleReference(practitionerRoleIdentifier.getValue());
-    	
-    	
+    	   	
     	// Build the practitioner role
     	List<CodeableConcept>codeableConcepts = new ArrayList<>();
     	codeableConcepts.add(roleCodeableConcept);
     	PractitionerRole practitionerRole = practitionerRoleFactory.buildPractitionerRole(ldapEntry.getJobTitle(), ldapEntry.getJobTitle(), codeableConcepts);
    	
     	
-    	// Associate the practitioner role with the practitioner
-    	// ?????????????????
+    	// Associate the practitioner role with the practitioner.
+    	Reference practitionerReference = practitionerResourceHelper.buildPractitionerReferenceUsingEmail(practitioner.getIdentifierFirstRep().getValue());
+    	practitionerRole.setPractitioner(practitionerReference);
     	
+
+    	// Add the organisation reference.
+    	Reference organisationReference = organizationResourceHelper.buildOrganizationReference(organisation.getName(), organisation.getIdentifierFirstRep().getUse());
+    	practitionerRole.setOrganization(organisationReference);
+    	
+    	// Add the contact points.
+    	practitionerRole.setTelecom(contactPoints);
+    	    	
     	return practitionerRole;	
+    }
+    
+    
+    /**
+     * 
+     * 
+     * @param value
+     * @param practitionerIdentifierType
+     * @return
+     */
+    private Identifier createAdditionalPractitionerIdentifiers(String value, String practitionerIdentifierType) {
+    	Identifier identifier = new Identifier();
+        identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
+        identifier.setValue(value);
+        
+        CodeableConcept identifierType = new CodeableConcept();
+        identifierType.setText(practitionerIdentifierType);
+        
+        identifier.setType(identifierType);
+        
+        Period validPeriod = new Period();
+        validPeriod.setStart(Date.from(Instant.now()));
+        identifier.setPeriod(validPeriod);
+    	
+        return identifier;
     }
 }

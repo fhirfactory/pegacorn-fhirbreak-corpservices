@@ -7,10 +7,17 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.CodeableConcept;
 import org.hl7.fhir.r4.model.ContactPoint;
+import org.hl7.fhir.r4.model.ContactPoint.ContactPointSystem;
+import org.hl7.fhir.r4.model.HumanName;
+import org.hl7.fhir.r4.model.HumanName.NameUse;
+import org.hl7.fhir.r4.model.Identifier;
 import org.hl7.fhir.r4.model.Organization;
 import org.hl7.fhir.r4.model.Practitioner;
 import org.hl7.fhir.r4.model.PractitionerRole;
+import org.hl7.fhir.r4.model.Reference;
+import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,12 +87,17 @@ public class TransformFhirToLdapEntry {
 	}
 	
 	
+	/**
+	 * Transform the resources within the bundle to an LDAP entry.
+	 * 
+	 * @param bundle
+	 * @return
+	 */
 	private PractitionerLdapEntry createLdapEntryFromBundle(Bundle bundle) {
 		PractitionerLdapEntry ldapEntry = new PractitionerLdapEntry(System.getenv("LDAP_SERVER_BASE_DN"));
 	
 		Practitioner practitioner = null;
-		List<ContactPoint> contactPoints = new ArrayList<>();
-		List<Organization> organization = new ArrayList<>();
+		List<Organization> organizations = new ArrayList<>();
 		PractitionerRole practitionerRole = null;
 		
 		// Extract all the resources from the bundle.
@@ -95,17 +107,87 @@ public class TransformFhirToLdapEntry {
             } else if (entry.getResource().getResourceType().equals(ResourceType.PractitionerRole)){
             	practitionerRole = (PractitionerRole)entry.getResource();
             }  else if (entry.getResource().getResourceType().equals(ResourceType.Organization)){
-            	organization.add((Organization)entry.getResource());
+            	organizations.add((Organization)entry.getResource());
             }
         }
         
-        // Now convert to ldap entry
+        HumanName preferredHumanName = null;
+        HumanName officalHumanName = null;
+        
+        for (HumanName name : practitioner.getName()) {
+        	if (name.getUse() == NameUse.OFFICIAL) {
+        		officalHumanName = name;
+        	} else if (name.getUse() == NameUse.USUAL) {
+        		preferredHumanName = name;
+        	}
+        }
+        
+        
         ldapEntry.setEmailAddress(practitioner.getIdentifierFirstRep().getValue());
-        ldapEntry.setGivenName(practitioner.getNameFirstRep().getGivenAsSingleString());
-        ldapEntry.setSurname(practitioner.getNameFirstRep().getFamily());
-        ldapEntry.setSuffix(practitioner.getNameFirstRep().getSuffixAsSingleString());
-        ldapEntry.setPersonalTitle(practitioner.getNameFirstRep().getPrefixAsSingleString());
+        ldapEntry.setGivenName(officalHumanName.getGivenAsSingleString());
+        ldapEntry.setSurname(officalHumanName.getFamily());
+        ldapEntry.setSuffix(officalHumanName.getSuffixAsSingleString());
+        ldapEntry.setPersonalTitle(officalHumanName.getPrefixAsSingleString());
+        ldapEntry.setPreferredName(preferredHumanName.getGivenAsSingleString());
+        
+        for (ContactPoint contactPoint : practitionerRole.getTelecom()) {
+        	if (contactPoint.getSystem() == ContactPointSystem.SMS) {
+        		ldapEntry.setMobileNumber(contactPoint.getValue());
+        	} else if (contactPoint.getSystem() == ContactPointSystem.PAGER) {
+        		ldapEntry.setPager(contactPoint.getValue());
+        	} else if (contactPoint.getSystem() == ContactPointSystem.PHONE) {
+        		ldapEntry.setTelephoneNumber(contactPoint.getValue());
+        	}
+        }
                 
+        ldapEntry.setJobTitle(practitionerRole.getIdentifierFirstRep().getValue());
+        
+
+        // Populate the additional practitioner identifiers.
+        for (Identifier identifier : practitioner.getIdentifier()) {
+        	CodeableConcept identifierType = identifier.getType();
+        	
+        	if (identifierType.getText().equals("AGS")) {
+        		ldapEntry.setAgsNumber(identifier.getValue());
+        	} else if (identifierType.getText().equals("IRN")) {
+        		ldapEntry.setIRN(identifier.getValue());
+        	} else if (identifierType.getText().equals("GS1")) {
+        		ldapEntry.setGS1(identifier.getValue());
+        	}
+        }
+        
+        // Populate the organisational structure details.
+        Reference subsectionReference = practitionerRole.getOrganization();
+        Organization subsection = (Organization)getOrganisationComponent(subsectionReference, organizations);
+        ldapEntry.setSubSection(subsection.getName());
+        
+        // Get the section
+        Reference sectionReference = subsection.getPartOf();
+        Organization section = (Organization)getOrganisationComponent(sectionReference, organizations);
+        ldapEntry.setSection(section.getName());
+        
+        // Get the branch
+        Reference branchReference = section.getPartOf();
+        Organization branch = (Organization)getOrganisationComponent(branchReference, organizations);
+        ldapEntry.setBranch(branch.getName());
+        
+        
+        // Get the division
+        Reference divisionReference = branch.getPartOf();
+        Organization division = (Organization)getOrganisationComponent(divisionReference, organizations);
+        ldapEntry.setDivision(division.getName());
+        
 		return ldapEntry;
+	}
+	
+	
+	private Resource getOrganisationComponent(Reference reference, List<Organization> organizations) {
+		for (Organization organisation : organizations) {
+			if (organisation.getName().equals(reference.getIdentifier().getValue())) {
+				return organisation;
+			}
+		}
+		
+		return null;
 	}
 }
