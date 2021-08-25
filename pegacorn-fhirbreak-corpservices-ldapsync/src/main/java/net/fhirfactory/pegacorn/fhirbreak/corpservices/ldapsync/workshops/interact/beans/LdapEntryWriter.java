@@ -34,7 +34,7 @@ public class LdapEntryWriter {
 		
 		LdapSyncConnection connection = new LdapSyncConnection();
 		
-		connection.addEntry(ldapEntry, true);
+		connection.addOrModifyEntry(ldapEntry);
 		
         UoWPayload uowPayload = new UoWPayload();
         uowPayload.setPayload("LDAP entry stored successfully");

@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.BaseLdapConnection;
-import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.LdapAttribute;
 import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.LdapAttributeNameEnum;
 import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.PractitionerLdapEntry;
 
@@ -31,7 +30,6 @@ public class LdapSyncConnection extends BaseLdapConnection {
 	public LdapSyncConnection() throws LdapException {
 	}
 
-
 	private static final Logger LOG = LoggerFactory.getLogger(LdapSyncConnection.class);
 
 	
@@ -41,29 +39,37 @@ public class LdapSyncConnection extends BaseLdapConnection {
 	 * @param newEntry
 	 * @throws LdapException
 	 */
-	public void addEntry(PractitionerLdapEntry newEntry, boolean overrideIfExists) throws LdapException, IOException, CursorException {
+	public void addOrModifyEntry(PractitionerLdapEntry newEntry) throws LdapException, IOException, CursorException {
 				
 		try {
 			connect();
 					
-			// Delete an existing entry if required before adding.
-			if (overrideIfExists && exists(newEntry.getEmailAddress())) {
-				deleteEntry(newEntry.getDN());
+			// Check to see if the entry exists and if it does then modify it.
+			PractitionerLdapEntry existingEntry = getEntry(newEntry.getCommonName());
+			
+			if (existingEntry != null) {
+				LOG.info("Brendan.  Existing entry found");
+				
+				if (!existingEntry.equals(newEntry)) {
+					LOG.info("Brendan.  An update is required");
+					
+					modifyEntry(newEntry, existingEntry);
+				}
+				
+				return;
 			}
 			
-			LOG.info("Brendan entry dn: {}", newEntry.getDN());
+			// If we get here we are adding a new entry.
+			
+			LOG.info("Brendan a new entry is required.  entry dn: {}", newEntry.getDN());
 			
 			Entry entry = new DefaultEntry(newEntry.getDN(),
 		            "ObjectClass: 1.3.6.1.4.1.18060.17.2.5",
 		            "ObjectClass: top");
 			
-			for (Map.Entry<LdapAttributeNameEnum, LdapAttribute> attribute : newEntry.getAttributes().entrySet()) {				
-		        entry.add(attribute.getKey().getName(), attribute.getValue().getValue());
+			for (Map.Entry<LdapAttributeNameEnum, String> attribute : newEntry.getAttributes().entrySet()) {				
+		        entry.add(attribute.getKey().getName(), attribute.getValue());
 			}
-			
-			entry.add("cn", newEntry.getCommonName());
-			entry.add("displayName", newEntry.getCommonName());
-			
 			
 			connection.add(entry);
 			
@@ -72,27 +78,42 @@ public class LdapSyncConnection extends BaseLdapConnection {
 		}
 	}
 	
-	
-	public void addEntry(PractitionerLdapEntry newEntry) throws LdapException, IOException, CursorException {
-		addEntry(newEntry, false);
-	}
-	
-	
 	/**
-	 * Modify a practitioner entry.
+	 * Modify a practitioner entry.  All attributes are updated.
 	 * 
 	 * @param updatedEntry
 	 * @throws LdapException
 	 */
 	public void modifyEntry(PractitionerLdapEntry updatedEntry) throws LdapException, IOException {
+		modifyEntry(updatedEntry, null);
+	}
+	
+	
+	/**
+	 * Modifies a practitioner entry and only modify attributes which have changed.
+	 * 
+	 * @param updatedEntry
+	 * @param changedAttributes
+	 * @throws LdapException
+	 * @throws IOException
+	 */
+	public void modifyEntry(PractitionerLdapEntry updatedEntry, PractitionerLdapEntry existingEntry) throws LdapException, IOException {
 		List<Modification>modifications = new ArrayList<>();
+		
+		List<LdapAttributeNameEnum>changedAttributes = null;
+		
+		if (existingEntry != null) {
+			changedAttributes = updatedEntry.getModifiedAttributeNames(existingEntry);
+		}
 		
 		try {
 			
-			for (Map.Entry<LdapAttributeNameEnum, LdapAttribute> attribute : updatedEntry.getAttributes().entrySet()) {
-				modifications.add(new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, attribute.getKey().getName(),attribute.getValue().getValue()));
+			for (Map.Entry<LdapAttributeNameEnum, String> attribute : updatedEntry.getAttributes().entrySet()) {
+				if (changedAttributes == null || changedAttributes.contains(attribute.getKey())) {
+					modifications.add(new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, attribute.getKey().getName(),attribute.getValue()));
+				}
 		    }
-			
+									
 			connect();
 			
 			for (Modification modification : modifications) {
@@ -101,7 +122,7 @@ public class LdapSyncConnection extends BaseLdapConnection {
 
 		} finally {
 			close();
-		}
+		}		
 	}
 	
 	

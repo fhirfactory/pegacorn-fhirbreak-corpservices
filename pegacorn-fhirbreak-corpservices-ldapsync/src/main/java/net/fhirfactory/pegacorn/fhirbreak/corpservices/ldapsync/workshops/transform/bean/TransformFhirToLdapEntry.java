@@ -153,6 +153,8 @@ public class TransformFhirToLdapEntry {
         		ldapEntry.setIRN(identifier.getValue());
         	} else if (identifierType.getText().equals("GS1")) {
         		ldapEntry.setGS1(identifier.getValue());
+        	} else if (identifierType.getText().equals("CN")) {
+        		ldapEntry.setCommonName(identifier.getValue());
         	}
         }
         
