@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.uhn.fhir.parser.IParser;
+import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.PractitionerIdentifierTypes;
 import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.PractitionerLdapEntry;
 import net.fhirfactory.pegacorn.common.model.generalid.FDN;
 import net.fhirfactory.pegacorn.common.model.generalid.RDN;
@@ -212,11 +213,11 @@ public class PractitonerFHIRBundleBuilder {
    	
     	practitioner.addName(preferredHumanName);
     	
-    	Identifier ags = createAdditionalPractitionerIdentifiers(ldapEntry.getAgsNumber(), "AGS");
-    	Identifier gs1 = createAdditionalPractitionerIdentifiers(ldapEntry.getGS1(), "GS1");
-    	Identifier irn = createAdditionalPractitionerIdentifiers(ldapEntry.getIRN(), "IRN");
-    	Identifier cn = createAdditionalPractitionerIdentifiers(ldapEntry.getCommonName(), "CN");
-    	Identifier accountName = createAdditionalPractitionerIdentifiers(ldapEntry.getAccountName(), "Account Name");
+    	Identifier ags = createAdditionalPractitionerIdentifiers(ldapEntry.getAgsNumber(), PractitionerIdentifierTypes.AGS);
+    	Identifier gs1 = createAdditionalPractitionerIdentifiers(ldapEntry.getGS1(), PractitionerIdentifierTypes.GS1);
+    	Identifier irn = createAdditionalPractitionerIdentifiers(ldapEntry.getIRN(), PractitionerIdentifierTypes.IRN);
+    	Identifier cn = createAdditionalPractitionerIdentifiers(ldapEntry.getCommonName(), PractitionerIdentifierTypes.COMMON_NAME);
+    	Identifier accountName = createAdditionalPractitionerIdentifiers(ldapEntry.getAccountName(), PractitionerIdentifierTypes.ACCOUNT_NAME);
     	
     	practitioner.addIdentifier(ags);
     	practitioner.addIdentifier(gs1);
@@ -305,13 +306,13 @@ public class PractitonerFHIRBundleBuilder {
      * @param practitionerIdentifierType
      * @return
      */
-    private Identifier createAdditionalPractitionerIdentifiers(String value, String practitionerIdentifierType) {
+    private Identifier createAdditionalPractitionerIdentifiers(String value, PractitionerIdentifierTypes practitionerIdentifierType) {
     	Identifier identifier = new Identifier();
         identifier.setUse(Identifier.IdentifierUse.OFFICIAL);
         identifier.setValue(value);
         
         CodeableConcept identifierType = new CodeableConcept();
-        identifierType.setText(practitionerIdentifierType);
+        identifierType.setText(practitionerIdentifierType.name());
         
         identifier.setType(identifierType);
         

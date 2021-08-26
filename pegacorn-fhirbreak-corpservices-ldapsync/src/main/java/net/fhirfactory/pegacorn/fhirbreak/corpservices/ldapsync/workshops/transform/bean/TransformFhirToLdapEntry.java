@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.uhn.fhir.parser.IParser;
+import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.PractitionerIdentifierTypes;
 import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.PractitionerLdapEntry;
 import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.components.dataparcel.DataParcelTypeDescriptor;
@@ -148,15 +149,15 @@ public class TransformFhirToLdapEntry {
         for (Identifier identifier : practitioner.getIdentifier()) {
         	CodeableConcept identifierType = identifier.getType();
         	
-        	if (identifierType.getText().equals("AGS")) {
+        	if (identifierType.getText().equals(PractitionerIdentifierTypes.AGS.name())) {
         		ldapEntry.setAgsNumber(identifier.getValue());
-        	} else if (identifierType.getText().equals("IRN")) {
+        	} else if (identifierType.getText().equals(PractitionerIdentifierTypes.IRN.name())) {
         		ldapEntry.setIRN(identifier.getValue());
-        	} else if (identifierType.getText().equals("GS1")) {
+        	} else if (identifierType.getText().equals(PractitionerIdentifierTypes.GS1.name())) {
         		ldapEntry.setGS1(identifier.getValue());
-        	} else if (identifierType.getText().equals("CN")) {
+        	} else if (identifierType.getText().equals(PractitionerIdentifierTypes.COMMON_NAME.name())) {
         		ldapEntry.setCommonName(identifier.getValue());
-        	} else if (identifierType.getText().equals("Account Name")) {
+        	} else if (identifierType.getText().equals(PractitionerIdentifierTypes.ACCOUNT_NAME.name())) {
         		ldapEntry.setAccountName(identifier.getValue());
         	}
         }
