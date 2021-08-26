@@ -183,11 +183,15 @@ public class TransformFhirToLdapEntry {
         Organization branch = (Organization)getOrganisationComponent(branchReference, organizations);
         ldapEntry.setBranch(branch.getName());
         
-        
         // Get the division
         Reference divisionReference = branch.getPartOf();
         Organization division = (Organization)getOrganisationComponent(divisionReference, organizations);
         ldapEntry.setDivision(division.getName());
+        
+        // Get the department
+        Reference departmentReference = division.getPartOf();
+        Organization department = (Organization)getOrganisationComponent(departmentReference, organizations);
+        ldapEntry.setDepartment(department.getName());
         
 		return ldapEntry;
 	}

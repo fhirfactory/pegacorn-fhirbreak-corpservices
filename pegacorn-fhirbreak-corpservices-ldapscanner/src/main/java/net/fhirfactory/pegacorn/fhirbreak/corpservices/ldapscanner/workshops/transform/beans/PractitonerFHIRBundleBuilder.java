@@ -105,7 +105,7 @@ public class PractitonerFHIRBundleBuilder {
         Practitioner practitioner = createPractitioner(ldapEntry);
         List<ContactPoint> contactPoints = createContactPoints(ldapEntry);
         List<Organization> organization = createOrganizationStructure(ldapEntry); 
-        PractitionerRole practitionerRole = createPractitionerRole(ldapEntry, practitioner, contactPoints, organization.get(4));
+        PractitionerRole practitionerRole = createPractitionerRole(ldapEntry, practitioner, contactPoints, organization.get(5));
         
         List<Resource>resources = new ArrayList<>();
         resources.add(practitioner);
@@ -254,7 +254,9 @@ public class PractitonerFHIRBundleBuilder {
     public List<Organization> createOrganizationStructure(PractitionerLdapEntry ldapEntry) {    	
     	List<Organization> organizationStructure = new ArrayList<>();    
   
-    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getDivision(), OrganizationType.OTHER, null));
+    	//TODO check this.  Is it department -> division -> branch -> section -> subsection -> business unit
+    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getDepartment(), OrganizationType.OTHER, null));
+    	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getDivision(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getDepartment(), IdentifierUse.OFFICIAL)));
     	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getBranch(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getDivision(), IdentifierUse.OFFICIAL)));
     	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getSection(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getBranch(), IdentifierUse.OFFICIAL)));
     	organizationStructure.add(organizationFactory.buildOrganization(ldapEntry.getSubSection(), OrganizationType.OTHER, organizationResourceHelper.buildOrganizationReference(ldapEntry.getSection(), IdentifierUse.OFFICIAL)));
