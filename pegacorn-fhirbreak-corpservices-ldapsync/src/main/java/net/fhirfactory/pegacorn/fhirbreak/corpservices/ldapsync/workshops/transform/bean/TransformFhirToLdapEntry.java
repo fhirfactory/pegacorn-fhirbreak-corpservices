@@ -128,6 +128,7 @@ public class TransformFhirToLdapEntry {
         ldapEntry.setSurname(officalHumanName.getFamily());
         ldapEntry.setSuffix(officalHumanName.getSuffixAsSingleString());
         ldapEntry.setPersonalTitle(officalHumanName.getPrefixAsSingleString());
+        ldapEntry.setTitle(officalHumanName.getPrefixAsSingleString());
         ldapEntry.setPreferredName(preferredHumanName.getGivenAsSingleString());
         
         for (ContactPoint contactPoint : practitionerRole.getTelecom()) {

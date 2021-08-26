@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.directory.api.ldap.model.cursor.CursorException;
+import org.apache.directory.api.ldap.model.entry.Attribute;
 import org.apache.directory.api.ldap.model.entry.DefaultEntry;
 import org.apache.directory.api.ldap.model.entry.DefaultModification;
 import org.apache.directory.api.ldap.model.entry.Entry;
@@ -48,20 +49,15 @@ public class LdapSyncConnection extends BaseLdapConnection {
 			PractitionerLdapEntry existingEntry = getEntry(newEntry.getCommonName());
 			
 			if (existingEntry != null) {
-				LOG.info("Brendan.  Existing entry found");
+				LOG.info("Updating entry. dn -> {}", existingEntry.getDN());
 				
-				if (!existingEntry.equals(newEntry)) {
-					LOG.info("Brendan.  An update is required");
-					
-					modifyEntry(newEntry, existingEntry);
-				}
+				modifyEntry(newEntry, existingEntry);
 				
 				return;
 			}
 			
 			// If we get here we are adding a new entry.
-			
-			LOG.info("Brendan a new entry is required.  entry dn: {}", newEntry.getDN());
+			LOG.info("Adding new entry. dn -> {}", newEntry.getDN());
 			
 			Entry entry = new DefaultEntry(newEntry.getDN(),
 		            "ObjectClass: 1.3.6.1.4.1.18060.17.2.5",
@@ -77,17 +73,7 @@ public class LdapSyncConnection extends BaseLdapConnection {
 			close();
 		}
 	}
-	
-	/**
-	 * Modify a practitioner entry.  All attributes are updated.
-	 * 
-	 * @param updatedEntry
-	 * @throws LdapException
-	 */
-	public void modifyEntry(PractitionerLdapEntry updatedEntry) throws LdapException, IOException {
-		modifyEntry(updatedEntry, null);
-	}
-	
+
 	
 	/**
 	 * Modifies a practitioner entry and only modify attributes which have changed.
@@ -97,28 +83,31 @@ public class LdapSyncConnection extends BaseLdapConnection {
 	 * @throws LdapException
 	 * @throws IOException
 	 */
-	public void modifyEntry(PractitionerLdapEntry updatedEntry, PractitionerLdapEntry existingEntry) throws LdapException, IOException {
+	public void modifyEntry(PractitionerLdapEntry updatedEntry, PractitionerLdapEntry existingEntry) throws LdapException, IOException, CursorException {
 		List<Modification>modifications = new ArrayList<>();
 		
-		List<LdapAttributeNameEnum>changedAttributes = null;
-		
-		if (existingEntry != null) {
-			changedAttributes = updatedEntry.getModifiedAttributeNames(existingEntry);
-		}
-		
 		try {
-			
-			for (Map.Entry<LdapAttributeNameEnum, String> attribute : updatedEntry.getAttributes().entrySet()) {
-				if (changedAttributes == null || changedAttributes.contains(attribute.getKey())) {
-					modifications.add(new DefaultModification(ModificationOperation.REPLACE_ATTRIBUTE, attribute.getKey().getName(),attribute.getValue()));
-				}
-		    }
-									
 			connect();
 			
-			for (Modification modification : modifications) {
-				connection.modify(updatedEntry.getDN(), modification);
+			// The processing here is to create remove attribute modifications for the existing attributes and then add the attributes from the model.  By doing this the destination attributes will always 
+			// match the source.
+			List<Attribute> attributes = this.getAttributes(existingEntry.getCommonName());
+			
+			for (Attribute attribute : attributes) {
+				modifications.add(new DefaultModification(ModificationOperation.REMOVE_ATTRIBUTE, attribute.getId()));
 			}
+
+			for (Map.Entry<LdapAttributeNameEnum, String> attribute : updatedEntry.getAttributes().entrySet()) {
+					modifications.add(new DefaultModification(ModificationOperation.ADD_ATTRIBUTE, attribute.getKey().getName(),attribute.getValue()));
+		    }
+			
+			Modification[]mods = new Modification[modifications.size()];
+			
+			for (int i = 0; i < modifications.size(); i++) {
+				mods[i] = modifications.get(i);
+			}
+
+			connection.modify(updatedEntry.getDN(), mods);
 
 		} finally {
 			close();

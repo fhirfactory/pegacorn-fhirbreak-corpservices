@@ -25,12 +25,8 @@ public class LdapEntryWriter {
 	public UoW writerLdapEntry(UoW incomingUoW) throws IOException, LdapException, CursorException{
 		
 		JSONObject ldapEntryJson = new JSONObject(incomingUoW.getIngresContent().getPayload());
-		
-		LOG.info("Brendan.  The json: {}", ldapEntryJson.toString());
-		
+				
 		PractitionerLdapEntry ldapEntry = new PractitionerLdapEntry(System.getenv("LDAP_SERVER_BASE_DN"), ldapEntryJson);
-		
-		LOG.info("Brendan.  In writer email address: {}", ldapEntry.getEmailAddress());
 		
 		LdapSyncConnection connection = new LdapSyncConnection();
 		
@@ -41,8 +37,6 @@ public class LdapEntryWriter {
         incomingUoW.getEgressContent().addPayloadElement(uowPayload);
         incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_SUCCESS);
         
-		LOG.info("Brendan.  end of writer");
-         
         return incomingUoW;
 		
 	}
