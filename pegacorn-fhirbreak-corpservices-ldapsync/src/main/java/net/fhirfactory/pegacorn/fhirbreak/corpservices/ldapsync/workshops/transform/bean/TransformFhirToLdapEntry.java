@@ -3,7 +3,6 @@ package net.fhirfactory.pegacorn.fhirbreak.corpservices.ldapsync.workshops.trans
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.hl7.fhir.r4.model.Bundle;
@@ -20,7 +19,6 @@ import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.ResourceType;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import ca.uhn.fhir.parser.IParser;
 import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.PractitionerIdentifierTypes;
@@ -43,12 +41,14 @@ import net.fhirfactory.pegacorn.util.FHIRContextUtility;
  * @author Brendan Douglas
  *
  */
-@ApplicationScoped
-public class TransformFhirToLdapEntry {
-    private static final Logger LOG = LoggerFactory.getLogger(TransformFhirToLdapEntry.class);
+public abstract class TransformFhirToLdapEntry {
     
     @Inject
     private FHIRContextUtility fhirContextUtility;
+    
+    protected abstract String getSourceSystem();
+    
+    protected abstract Logger getLogger();
 	
 	
 	public UoW convert(UoW incomingUoW) {
@@ -69,7 +69,7 @@ public class TransformFhirToLdapEntry {
 		manifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_NEGATIVE);
 		manifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
 		manifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
-		manifest.setSourceSystem("aether-fhirbreak-ldapsync");
+		manifest.setSourceSystem(getSourceSystem());
 		manifest.setInterSubsystemDistributable(false); 
 		
     

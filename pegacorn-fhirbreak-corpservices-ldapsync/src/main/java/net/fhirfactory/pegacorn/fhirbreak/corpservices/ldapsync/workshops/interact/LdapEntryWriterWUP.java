@@ -5,9 +5,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.components.dataparcel.DataParcelTypeDescriptor;
 import net.fhirfactory.pegacorn.components.dataparcel.valuesets.DataParcelDirectionEnum;
@@ -28,17 +25,12 @@ import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessing
  * @author Brendan Douglas
  *
  */
-public class LdapEntryWriterWUP extends InteractEgressAPIClientGatewayWUP  {
-    private static final Logger LOG = LoggerFactory.getLogger(LdapEntryWriterWUP.class);
+public abstract class LdapEntryWriterWUP extends InteractEgressAPIClientGatewayWUP  {
     
     @Inject
     private InteractWorkshop workshop;
-	
-
-	@Override
-	protected Logger specifyLogger() {
-		return LOG;
-	}
+		
+	protected abstract String getSourceSystem();
 
 	@Override
 	protected List<DataParcelManifest> specifySubscriptionTopics() {
@@ -57,7 +49,7 @@ public class LdapEntryWriterWUP extends InteractEgressAPIClientGatewayWUP  {
 		manifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_NEGATIVE);
 		manifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
 		manifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
-		manifest.setSourceSystem("aether-fhirbreak-ldapsync");
+		manifest.setSourceSystem(getSourceSystem());
 		manifest.setInterSubsystemDistributable(false); 
 		
 		dataParcelManifests.add(manifest);

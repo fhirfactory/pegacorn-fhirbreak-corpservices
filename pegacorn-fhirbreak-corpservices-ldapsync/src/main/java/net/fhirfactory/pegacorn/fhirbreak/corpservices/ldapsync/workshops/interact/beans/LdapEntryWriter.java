@@ -38,7 +38,5 @@ public class LdapEntryWriter {
         incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_SUCCESS);
         
         return incomingUoW;
-		
 	}
-
 }

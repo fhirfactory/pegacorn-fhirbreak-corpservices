@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.directory.api.ldap.model.cursor.CursorException;
 import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import ca.uhn.fhir.model.dstu2.resource.Bundle.Entry;
 import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.PractitionerLdapEntry;
@@ -27,8 +26,11 @@ import net.fhirfactory.pegacorn.petasos.model.uow.UoWProcessingOutcomeEnum;
  * @author Brendan Douglas
  *
  */
-public class Ldap2UoW {
-    private static final Logger LOG = LoggerFactory.getLogger(Ldap2UoW.class);
+
+public abstract class LdapEntryToUoW {    
+    protected abstract String getSourceSystem();
+    
+    protected abstract Logger getLogger();
 	
 	 /**
 	  * Read from LDAP and add the content to the unit of work.
@@ -50,7 +52,7 @@ public class Ldap2UoW {
 		manifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_POSITIVE);
 		manifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
 		manifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
-		manifest.setSourceSystem("aether-fhirbreak-ldapscanner");
+		manifest.setSourceSystem(getSourceSystem());
 		manifest.setInterSubsystemDistributable(false); 
 
         UoWPayload emptyPayload = new UoWPayload();

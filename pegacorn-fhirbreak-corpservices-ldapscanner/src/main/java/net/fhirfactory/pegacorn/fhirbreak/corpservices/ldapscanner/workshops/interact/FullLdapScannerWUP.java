@@ -3,9 +3,6 @@
  */
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.ldapscanner.workshops.interact;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * A full LDAP scanner WUP.  This WUP will read all entries.
  * 
@@ -13,7 +10,6 @@ import org.slf4j.LoggerFactory;
  *
  */
 public abstract class FullLdapScannerWUP extends BaseLdapScannerWUP {
-    private static final Logger LOG = LoggerFactory.getLogger(FullLdapScannerWUP.class);
     
     private String WUP_VERSION="1.0.0";
     
@@ -28,14 +24,9 @@ public abstract class FullLdapScannerWUP extends BaseLdapScannerWUP {
 	protected String getEndpointDiscriminator() {
 		return "full-scanning";
 	}
-	
-	@Override
-	protected Logger specifyLogger() {
-		return LOG;
-	}
 
 	
-    @Override
+	@Override
     protected String specifyIngresTopologyEndpointName() {
         return "ldapServer";
     }

@@ -9,7 +9,7 @@ import org.apache.camel.Exchange;
 
 import net.fhirfactory.pegacorn.components.interfaces.topology.WorkshopInterface;
 import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.interact.StandardInteractClientTopologyEndpointPort;
-import net.fhirfactory.pegacorn.fhirbreak.corpservices.ldapscanner.workshops.interact.beans.Ldap2UoW;
+import net.fhirfactory.pegacorn.fhirbreak.corpservices.ldapscanner.workshops.interact.beans.LdapEntryToUoW;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.ldapscanner.workshops.interact.beans.ReadLdapEntries;
 import net.fhirfactory.pegacorn.petasos.core.moa.wup.TriggerBasedWUPEndpoint;
 import net.fhirfactory.pegacorn.petasos.wup.helper.IngresActivityBeginRegistration;
@@ -33,6 +33,9 @@ public abstract class BaseLdapScannerWUP extends InteractIngresAPIClientGatewayW
 	
 	@Inject
 	private ReadLdapEntries readLdapEntries;
+	
+	@Inject
+	private LdapEntryToUoW ldap2UoW; 
 	
 
 	@Override
@@ -67,7 +70,7 @@ public abstract class BaseLdapScannerWUP extends InteractIngresAPIClientGatewayW
         // Convert the LDAP entries to a UoW.
         fromInteractIngresService(ingresFeed())
 	    	.routeId(getNameSet().getRouteCoreWUP())
-	    	.bean(Ldap2UoW.class,"encapsulateLdapData")
+	    	.bean(ldap2UoW,"encapsulateLdapData")
 	    	.bean(IngresActivityBeginRegistration.class, "registerActivityStart(*,  Exchange)")
 	        .to(egressFeed());
     }
@@ -95,12 +98,10 @@ public abstract class BaseLdapScannerWUP extends InteractIngresAPIClientGatewayW
 	protected TriggerBasedWUPEndpoint specifyIngresEndpoint() {
 		TriggerBasedWUPEndpoint endpoint = new TriggerBasedWUPEndpoint();
 		
-        getLogger().info("Brendan .specifyIngresEndpoint(): Entry, specifyIngresTopologyEndpointName()->{}", specifyIngresTopologyEndpointName());
+        getLogger().info(".specifyIngresEndpoint(): Entry, specifyIngresTopologyEndpointName()->{}", specifyIngresTopologyEndpointName());
 
         StandardInteractClientTopologyEndpointPort serverTopologyEndpoint = (StandardInteractClientTopologyEndpointPort) getTopologyEndpoint(specifyIngresTopologyEndpointName());
-        
-        getLogger().info("Brendan: {}", serverTopologyEndpoint);
-        
+               
         getLogger().trace(".specifyIngresEndpoint(): Retrieved serverTopologyEndpoint->{}", serverTopologyEndpoint);
         endpoint.setEndpointSpecification("xxxxxxxxxxxxxxxx");
         endpoint.setEndpointTopologyNode(serverTopologyEndpoint);

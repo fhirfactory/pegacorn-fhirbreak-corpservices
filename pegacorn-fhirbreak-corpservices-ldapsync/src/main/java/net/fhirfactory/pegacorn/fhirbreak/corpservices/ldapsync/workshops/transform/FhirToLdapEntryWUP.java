@@ -5,9 +5,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.components.dataparcel.DataParcelTypeDescriptor;
 import net.fhirfactory.pegacorn.components.dataparcel.valuesets.DataParcelDirectionEnum;
@@ -27,9 +24,7 @@ import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessing
  *
  */
 public abstract class FhirToLdapEntryWUP extends MOAStandardWUP {
-	
-    private static final Logger LOG = LoggerFactory.getLogger(FhirToLdapEntryWUP.class);
-    
+	    
     private static String WUP_VERSION = "1.0.0";
     
 	@Inject
@@ -37,12 +32,6 @@ public abstract class FhirToLdapEntryWUP extends MOAStandardWUP {
 	
 	@Inject
 	private TransformFhirToLdapEntry fhirToUoW;
-
-	@Override
-	protected Logger specifyLogger() {
-		return LOG;
-	}
-
 	
 	@Override
 	protected List<DataParcelManifest> specifySubscriptionTopics() {

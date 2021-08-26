@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.hl7.fhir.r4.model.Bundle;
@@ -27,7 +26,6 @@ import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.codesystems.OrganizationType;
 import org.json.JSONObject;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import ca.uhn.fhir.parser.IParser;
 import net.fhirfactory.pegacorn.buildingblocks.datamodels.ldap.PractitionerIdentifierTypes;
@@ -61,11 +59,9 @@ import net.fhirfactory.pegacorn.util.FHIRContextUtility;
  * @author Brendan Douglas
  *
  */
-@ApplicationScoped
-public class PractitonerFHIRBundleBuilder {
+public abstract class PractitonerFHIRBundleBuilder {
+
 	
-    private static final Logger LOG = LoggerFactory.getLogger(PractitonerFHIRBundleBuilder.class);
-    
     @Inject
     private PractitionerResourceHelpers practitionerResourceHelper;
     
@@ -95,6 +91,10 @@ public class PractitonerFHIRBundleBuilder {
     
     @Inject
     private PractitionerRoleResourceHelper practitionerRoleResourceHelper;
+    
+    protected abstract String getSourceSystem();
+    
+    protected abstract Logger getLogger();
     
     public UoW buildFHIRBundle(UoW incomingUoW) {
 		
@@ -144,7 +144,7 @@ public class PractitonerFHIRBundleBuilder {
 		manifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_NEGATIVE);
 		manifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
 		manifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
-		manifest.setSourceSystem("aether-fhirbreak-ldapscanner");
+		manifest.setSourceSystem(getSourceSystem());
 		manifest.setInterSubsystemDistributable(false); 
 
         UoWPayload contentPayload = new UoWPayload();
