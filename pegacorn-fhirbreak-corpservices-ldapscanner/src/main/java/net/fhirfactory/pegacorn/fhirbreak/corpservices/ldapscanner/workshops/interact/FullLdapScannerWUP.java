@@ -49,4 +49,9 @@ public abstract class FullLdapScannerWUP extends BaseLdapScannerWUP {
     protected String specifyWUPInstanceVersion() {
         return (WUP_VERSION);
     }
+
+	@Override
+	protected String getLdapReadBeanMethod() {
+		return "readAll";
+	}  
 }

@@ -45,7 +45,7 @@ public class LdapScannerConnection extends BaseLdapConnection {
 	 * @throws IOException
 	 */
 	public List<PractitionerLdapEntry> getAll()  throws LdapException, CursorException, IOException {
-		return search(null);
+		return read(null);
 	}
 	
 	
@@ -59,7 +59,7 @@ public class LdapScannerConnection extends BaseLdapConnection {
 	 * @throws CursorException
 	 * @throws IOException
 	 */
-	public List<PractitionerLdapEntry> search(Date after) throws LdapException, CursorException, IOException {	
+	public List<PractitionerLdapEntry> read(Date after) throws LdapException, CursorException, IOException {	
 	
 		List<PractitionerLdapEntry>entries = new ArrayList<>();
 			
@@ -69,10 +69,11 @@ public class LdapScannerConnection extends BaseLdapConnection {
 	    searchRequest.addAttributes("*","+");
 	    searchRequest.setTimeLimit(0);
 	    searchRequest.setBase(new Dn(baseDN));
-	    searchRequest.setFilter("(objectclass=*)");
 	    
-	    if (after != null) {
-	    	searchRequest.setFilter("(|(createTimestamp >=" + DateUtils.getGeneralizedTime(after) +")(modifyTimestamp >=" + DateUtils.getGeneralizedTime(after) + "))");
+	    if (after == null) {
+	    	searchRequest.setFilter("(objectclass=*)");
+	    } else {
+	    	searchRequest.setFilter("(&(objectclass=*)(|(createTimestamp >=" + DateUtils.getGeneralizedTime(after) +")(modifyTimestamp >=" + DateUtils.getGeneralizedTime(after) + ")))");
 	    }
 
 	    SearchCursor searchCursor = null;
@@ -101,6 +102,11 @@ public class LdapScannerConnection extends BaseLdapConnection {
 		}
 		
 		return entries;
+	}
+	
+	
+	public List<PractitionerLdapEntry> readAll() throws LdapException, CursorException, IOException {
+		return read(null);
 	}
 
 

@@ -216,11 +216,13 @@ public class PractitonerFHIRBundleBuilder {
     	Identifier gs1 = createAdditionalPractitionerIdentifiers(ldapEntry.getGS1(), "GS1");
     	Identifier irn = createAdditionalPractitionerIdentifiers(ldapEntry.getIRN(), "IRN");
     	Identifier cn = createAdditionalPractitionerIdentifiers(ldapEntry.getCommonName(), "CN");
+    	Identifier accountName = createAdditionalPractitionerIdentifiers(ldapEntry.getAccountName(), "Account Name");
     	
     	practitioner.addIdentifier(ags);
     	practitioner.addIdentifier(gs1);
     	practitioner.addIdentifier(irn);
     	practitioner.addIdentifier(cn);
+    	practitioner.addIdentifier(accountName);
     	
     	return practitioner;
     }

@@ -30,6 +30,10 @@ public abstract class BaseLdapScannerWUP extends InteractIngresAPIClientGatewayW
 	
 	@Inject
 	private InteractWorkshop interactWorkshop;
+	
+	@Inject
+	private ReadLdapEntries readLdapEntries;
+	
 
 	@Override
 	protected WorkshopInterface specifyWorkshop() {
@@ -54,7 +58,7 @@ public abstract class BaseLdapScannerWUP extends InteractIngresAPIClientGatewayW
         
         from("quartz://" + getEndpointDiscriminator() + "?cron=" + getScanningCronExpression())
 		.routeId(getNameSet().getRouteCoreWUP() + getEndpointDiscriminator())
-		.bean(ReadLdapEntries.class, "read")
+		.bean(readLdapEntries, getLdapReadBeanMethod())
         .to(ingresFeed());
         
                
@@ -105,4 +109,7 @@ public abstract class BaseLdapScannerWUP extends InteractIngresAPIClientGatewayW
         getLogger().debug(".specifyIngresEndpoint(): Exit, endpoint->{}", endpoint);
         return (endpoint);
 	}
+	
+	
+	protected abstract String getLdapReadBeanMethod();
 }

@@ -3,6 +3,8 @@
  */
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.ldapscanner.workshops.interact;
 
+import java.util.Date;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +16,8 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class IncrementalLdapScannerWUP extends BaseLdapScannerWUP {
     private static final Logger LOG = LoggerFactory.getLogger(IncrementalLdapScannerWUP.class);
+    
+    private Date lastScanned;
     
     private String WUP_VERSION="1.0.0";    
     
@@ -48,4 +52,9 @@ public abstract class IncrementalLdapScannerWUP extends BaseLdapScannerWUP {
     protected String specifyWUPInstanceVersion() {
         return (WUP_VERSION);
     }
+    
+	@Override
+	protected String getLdapReadBeanMethod() {
+		return "incrementalRead";
+	}  
 }
