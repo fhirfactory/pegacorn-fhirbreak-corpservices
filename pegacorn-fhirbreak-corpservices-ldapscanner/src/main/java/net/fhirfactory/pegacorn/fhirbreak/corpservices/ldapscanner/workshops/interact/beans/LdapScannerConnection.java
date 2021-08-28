@@ -9,6 +9,7 @@ import org.apache.directory.api.ldap.model.cursor.CursorException;
 import org.apache.directory.api.ldap.model.cursor.SearchCursor;
 import org.apache.directory.api.ldap.model.entry.Entry;
 import org.apache.directory.api.ldap.model.exception.LdapException;
+import org.apache.directory.api.ldap.model.filter.FilterEncoder;
 import org.apache.directory.api.ldap.model.message.Response;
 import org.apache.directory.api.ldap.model.message.SearchRequest;
 import org.apache.directory.api.ldap.model.message.SearchRequestImpl;
@@ -71,11 +72,11 @@ public class LdapScannerConnection extends BaseLdapConnection {
 	    searchRequest.setBase(new Dn(baseDN));
 	    
 	    if (after == null) {
-	    	searchRequest.setFilter("(objectclass=*)");
+	    	searchRequest.setFilter("(&(objectCategory=Organizationalperson)(objectClass=person))");
 	    } else {
-	    	searchRequest.setFilter("(&(objectclass=*)(|(createTimestamp >=" + DateUtils.getGeneralizedTime(after) +")(modifyTimestamp >=" + DateUtils.getGeneralizedTime(after) + ")))");
+	    	searchRequest.setFilter(FilterEncoder.format("(&(&(objectCategory=Organizationalperson)(objectClass=person))(|(createTimestamp>={0})(modifyTimestamp>={1})))",DateUtils.getGeneralizedTime(after), DateUtils.getGeneralizedTime(after)));
 	    }
-
+		
 	    SearchCursor searchCursor = null;
 	    
 		try {

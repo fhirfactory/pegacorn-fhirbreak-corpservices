@@ -194,6 +194,9 @@ public abstract class TransformFhirToLdapEntry {
         Organization department = (Organization)getOrganisationComponent(departmentReference, organizations);
         ldapEntry.setDepartment(department.getName());
         
+        // ObjectCategoey is an attribute in Microsoft AD which the Spok console load script uses.   
+        ldapEntry.setObjectCategory("OrganizationalPerson");
+        
 		return ldapEntry;
 	}
 	
