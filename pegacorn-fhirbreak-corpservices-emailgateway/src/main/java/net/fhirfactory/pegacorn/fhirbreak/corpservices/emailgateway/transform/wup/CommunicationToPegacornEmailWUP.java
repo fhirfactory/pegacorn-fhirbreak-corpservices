@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.wup;
+package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.transform.wup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,30 +33,27 @@ import org.slf4j.LoggerFactory;
 import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.components.interfaces.topology.WorkshopInterface;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.EmailDataParcelManifestBuilder;
-import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.beans.PegacornEmailToSMTP;
-import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.beans.SMTPToResult;
-import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
+import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.transform.beans.CommunicationToPegacornEmail;
+import net.fhirfactory.pegacorn.workshops.TransformWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.MOAStandardWUP;
 
 @ApplicationScoped
-public class SMTPEgressWUP extends MOAStandardWUP {
+public class CommunicationToPegacornEmailWUP extends MOAStandardWUP {
     
-    public static final String PROP_SMTP_HOST = "smtp.hostname";
-    public static final String PROP_SMTP_PORT = "smtp.port";
+    private static final Logger LOG = LoggerFactory.getLogger(CommunicationToPegacornEmailWUP.class);
     
-    private static final Logger LOG = LoggerFactory.getLogger(SMTPEgressWUP.class);
     private static final String WUP_VERSION = "1.0.0";
-    private static final String WUP_NAME = "SMTPEgressWUP";
+    private static final String WUP_NAME = "CommunicationToPegacornEmailWUP";
 
     
     @Inject
-    private InteractWorkshop workshop;
+    private TransformWorkshop workshop;
     
     @Inject
     private EmailDataParcelManifestBuilder emailManifestBuilder;
 
     
-    public SMTPEgressWUP() {
+    public CommunicationToPegacornEmailWUP() {
     }
 
     @Override
@@ -66,7 +63,7 @@ public class SMTPEgressWUP extends MOAStandardWUP {
 
     @Override
     protected List<DataParcelManifest> specifySubscriptionTopics() {
-        DataParcelManifest manifest = emailManifestBuilder.createManifest("PegacornEmail", "1.0.0"); //TODO fix up hardcoded values
+        DataParcelManifest manifest = emailManifestBuilder.createManifest("Communication", "1.0.0"); //TODO fix up hardcoded values
         List<DataParcelManifest> manifestList = new ArrayList<>();
         manifestList.add(manifest);
         return manifestList;
@@ -94,9 +91,7 @@ public class SMTPEgressWUP extends MOAStandardWUP {
         
         fromIncludingPetasosServices(ingresFeed())
             .routeId(getNameSet().getRouteCoreWUP())
-            .bean(PegacornEmailToSMTP.class)
-            .to("smtp://{{" + PROP_SMTP_HOST + "}}:{{" + PROP_SMTP_PORT + "}}?debugMode=true")
-            .bean(SMTPToResult.class)
+            .bean(CommunicationToPegacornEmail.class)
             .to(egressFeed());
     }
 }
