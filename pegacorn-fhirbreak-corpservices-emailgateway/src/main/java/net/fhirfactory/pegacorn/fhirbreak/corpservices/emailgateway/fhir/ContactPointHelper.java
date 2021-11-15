@@ -24,6 +24,7 @@ package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.fhir;
 import java.util.List;
 
 import org.hl7.fhir.r4.model.ContactPoint;
+import org.hl7.fhir.r4.model.Narrative;
 import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.Practitioner;
 import org.hl7.fhir.r4.model.PractitionerRole;
@@ -31,6 +32,7 @@ import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.thymeleaf.util.StringUtils;
 
 public class ContactPointHelper {
     
@@ -40,6 +42,7 @@ public class ContactPointHelper {
             throws ContactPointRetrieveException
     {
         if (contactableEntity == null || contactPointType == null) {
+            //TODO allow for null contactPointType (although does this mean any or specifically match unspecified type?)
             throw new IllegalArgumentException("Must specify contactableEntity and contactPointType");
         }
         
@@ -74,9 +77,32 @@ public class ContactPointHelper {
             }
         }
         if (topRankContact == null) {
+            String contactableEntityDisplay = contactableEntity.getId();
+            if (StringUtils.isEmpty(contactableEntityDisplay)) {
+                Narrative narrative = null;
+                switch (entityType) {
+                    case Practitioner:
+                        narrative = ((Practitioner) contactableEntity).getText();
+                        break;
+                    case PractitionerRole:
+                        narrative = ((PractitionerRole) contactableEntity).getText();
+                        break;
+                    case Patient:
+                        narrative = ((Patient) contactableEntity).getText();
+                        break;
+                    default:
+                        // no handling for other types
+                }
+                if (narrative != null) {
+                    contactableEntityDisplay = narrative.primitiveValue();
+                } else {
+                    contactableEntityDisplay = contactableEntity.toString();
+                }
+            }
+            
             throw new NoMatchingContactException(
                     "No contact of type " + contactPointType +
-                    " found for " + entityType + " " + contactableEntity);
+                    " found for " + entityType + " " + contactableEntityDisplay);
         }
         
         return topRankContact.getValue();

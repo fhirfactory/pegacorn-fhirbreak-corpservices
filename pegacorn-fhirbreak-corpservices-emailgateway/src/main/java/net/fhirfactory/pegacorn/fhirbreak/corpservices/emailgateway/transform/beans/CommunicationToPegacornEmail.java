@@ -24,12 +24,16 @@ package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.transform.b
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hl7.fhir.r4.model.Communication;
+import org.hl7.fhir.r4.model.Communication.CommunicationPayloadComponent;
 import org.hl7.fhir.r4.model.ContactPoint;
+import org.hl7.fhir.r4.model.Extension;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Resource;
 import org.slf4j.Logger;
@@ -39,6 +43,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import ca.uhn.fhir.parser.IParser;
 import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.EmailDataParcelManifestBuilder;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.PegacornEmail;
@@ -47,18 +52,42 @@ import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.fhir.Contact
 import net.fhirfactory.pegacorn.petasos.model.uow.UoW;
 import net.fhirfactory.pegacorn.petasos.model.uow.UoWPayload;
 import net.fhirfactory.pegacorn.petasos.model.uow.UoWProcessingOutcomeEnum;
+import net.fhirfactory.pegacorn.util.FHIRContextUtility;
 
+@ApplicationScoped
 public class CommunicationToPegacornEmail {
+    
+    public static final String EMAIL_SUBJECT_EXTENSION_URL = "identifier://net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway/subject";  // will be moved to a more common petasos class
 
     private static final Logger LOG = LoggerFactory.getLogger(CommunicationToPegacornEmail.class);
     
     private ObjectMapper jsonMapper; //TODO make common
-    
+    private IParser fhirParser;
+    private boolean initialised;
+    @Inject
+    private FHIRContextUtility fhirContextUtility;
     @Inject
     private EmailDataParcelManifestBuilder emailManifestBuilder;
     
+    
+    
     public CommunicationToPegacornEmail() {
-        jsonMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT); // sets pretty printing;
+    }
+    
+    @PostConstruct
+    public void initialise() {
+        LOG.debug(".initialise(): Entry");
+        if(!initialised) {
+            LOG.info(".initialise(): initialising....");
+            fhirParser = fhirContextUtility.getJsonParser();
+            jsonMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT); // sets pretty printing
+            this.initialised = true;
+            LOG.info(".initialise(): Done.");
+        }
+        else {
+            LOG.debug(".initialise(): Already initialised, nothing to do...");
+        }
+        LOG.debug(".initialise(): Exit");
     }
     
 
@@ -90,24 +119,19 @@ public class CommunicationToPegacornEmail {
         
         // get the payload into a FHIR::Communication resource
         LOG.trace(".transformCommunicationToEmail(): Mapping input payload into FHIR Communication");
-        Communication emailCommunication;
-        try {
-            emailCommunication = jsonMapper.readValue(incomingPayload, Communication.class);
-        } catch (JsonProcessingException  e) {
-            incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-            incomingUoW.setFailureDescription(e.getMessage());
-            LOG.warn(".transformCommunicationToEmail(): Exit, Error with Decoding JSON Payload", e);
-            return incomingUoW;
-        }
+        Communication emailCommunication = fhirParser.parseResource(Communication.class, incomingPayload);
         
         PegacornEmail email = new PegacornEmail();
         
         // get the sender
         Resource sender = emailCommunication.getSenderTarget();
+        if (sender == null && emailCommunication.getSender() != null) {
+            sender = (Resource) emailCommunication.getSender().getResource();
+        }
         if (sender == null) {
             incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
             incomingUoW.setFailureDescription("No Sender in Communication");
-            LOG.warn(".transformCommunicationToEmail(): Exit, No Sender in Communication->{}", emailCommunication);
+            LOG.warn(".transformCommunicationToEmail(): Exit, No Sender in Communication");
             return incomingUoW;
         }
         try {
@@ -140,17 +164,56 @@ public class CommunicationToPegacornEmail {
                 return incomingUoW;
             }
         }
+        email.setTo(toEmails);
         
-        // get the subject
-        //TODO get from extension to payload
-        email.setSubject("temporary subject");
+        // get the content, subject and attachments
+        List<CommunicationPayloadComponent> payload = emailCommunication.getPayload();
+        if (payload == null) {
+            incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+            incomingUoW.setFailureDescription("No email content/attachments");
+            LOG.warn(".transformCommunicationToEmail(): Exit, No email content/attachments for email->{}", email);
+            return incomingUoW;
+        }
         
-        // get the content
-        //TODO get from payload
-        email.setContent("Temporary message content");
-        
-        // get the attachments
-        //TODO get from payload
+        boolean hasContent = false;
+        for (CommunicationPayloadComponent payloadComponent : payload) {
+            if (payloadComponent.hasContentAttachment()) {
+                //TODO process as attachment
+                LOG.error(".transformCommunicationToEmail(): Attachments not yet processed");
+                
+            } else if (payloadComponent.hasContentReference()) {
+                //TODO support this
+//                incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+//                incomingUoW.setFailureDescription("Reference payload type is not supported");
+//                LOG.warn(".transformCommunicationToEmail(): Exit, Unsupported reference payload type");
+//                return incomingUoW;
+                LOG.warn(".transformCommunicationToEmail(): Ignored unsupported reference payload type");
+            } else if (payloadComponent.hasContentStringType()) {
+                if (hasContent) {
+                    // multiple content - not allowed as not sure how this should be processed
+                    incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+                    incomingUoW.setFailureDescription("Found multiple contentString payload elements");
+                    LOG.warn(".transformCommunicationToEmail(): Exit, Found multiple contentString payload elements for email->{}", email);
+                    return incomingUoW;
+                }
+                
+                // set content
+                String emailContent = payloadComponent.getContentStringType().primitiveValue();
+                email.setContent(emailContent);
+                
+                // get the subject from the extension
+                LOG.debug(".transformCommunicationToEmail(): Getting email subject from payload extension");
+                Extension subjectExtension = payloadComponent.getExtensionByUrl(EMAIL_SUBJECT_EXTENSION_URL);
+                if (subjectExtension == null) {
+                    // don't allow email without a subject
+                    incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+                    incomingUoW.setFailureDescription("No subject extension found with contentString payload");
+                    LOG.warn(".transformCommunicationToEmail(): Exit, No subject extension found with contentString payload for email->{}", email);
+                    return incomingUoW;
+                }
+                email.setSubject(subjectExtension.getValue().primitiveValue());
+            }
+        }
         
         // convert pegacorn email to JSON string
         String egressPayloadString = null;
@@ -167,7 +230,7 @@ public class CommunicationToPegacornEmail {
         UoWPayload egressUoWPayload = new UoWPayload();
         egressUoWPayload.setPayload(egressPayloadString);
         
-        DataParcelManifest manifest = emailManifestBuilder.createManifest("PegacornEmail", "1.0.0"); //TODO fix up hardcoded values
+        DataParcelManifest manifest = emailManifestBuilder.createManifest(EmailDataParcelManifestBuilder.TYPE_PEGARORN_EMAIL, "1.0.0");
         List<DataParcelManifest> manifestList = new ArrayList<>();
         manifestList.add(manifest);
         

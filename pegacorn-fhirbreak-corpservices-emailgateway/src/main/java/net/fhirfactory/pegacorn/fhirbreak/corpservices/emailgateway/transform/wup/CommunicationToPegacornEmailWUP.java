@@ -63,7 +63,7 @@ public class CommunicationToPegacornEmailWUP extends MOAStandardWUP {
 
     @Override
     protected List<DataParcelManifest> specifySubscriptionTopics() {
-        DataParcelManifest manifest = emailManifestBuilder.createManifest("Communication", "1.0.0"); //TODO fix up hardcoded values
+        DataParcelManifest manifest = emailManifestBuilder.createManifest(EmailDataParcelManifestBuilder.TYPE_COMMUNICATION, "1.0.0");
         List<DataParcelManifest> manifestList = new ArrayList<>();
         manifestList.add(manifest);
         return manifestList;

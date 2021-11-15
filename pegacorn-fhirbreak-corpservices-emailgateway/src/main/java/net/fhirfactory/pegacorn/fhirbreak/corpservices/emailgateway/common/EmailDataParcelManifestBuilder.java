@@ -33,6 +33,9 @@ import net.fhirfactory.pegacorn.components.dataparcel.valuesets.PolicyEnforcemen
 
 @ApplicationScoped
 public class EmailDataParcelManifestBuilder {
+    
+    public static final String TYPE_COMMUNICATION = "CommunicationAboutEmail";
+    public static final String TYPE_PEGARORN_EMAIL = "PegacornEmail";
 
     protected DataParcelTypeDescriptor createTypeDescriptor(String recordType, String version) {
         DataParcelTypeDescriptor typeDescriptor = new DataParcelTypeDescriptor();
