@@ -21,10 +21,14 @@
  */
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.beans;
 
-import java.io.IOException;
+import java.util.Base64;
 import java.util.stream.Collectors;
 
+import javax.activation.DataHandler;
+import javax.mail.util.ByteArrayDataSource;
+
 import org.apache.camel.Exchange;
+import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.PegacornEmail;
+import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.PegacornEmailAttachment;
 import net.fhirfactory.pegacorn.petasos.model.uow.UoW;
 import net.fhirfactory.pegacorn.petasos.model.uow.UoWProcessingOutcomeEnum;
 
@@ -104,6 +109,44 @@ public class PegacornEmailToSMTP {
         }
         if (email.getCc() != null) {
             exchange.getIn().setHeader("cc", email.getCc().stream().collect(Collectors.joining(","))); //TODO may need to add quotation around emails or escape things
+        }
+        int numAttachments = 0;
+        for (PegacornEmailAttachment attachment : email.getAttachments()) {
+            //TODO if no data get attachment from url if possible
+            //TODO if size and or hash then check this (either immediately if small or when streaming if larger)
+            //TODO try to retain creation metadata on file is given as in the data field
+            numAttachments++;
+            LOG.trace(".transformPegcornEmailIntoSMTP(): Processing attachment {}", numAttachments);
+            String attachmentName = attachment.getName();
+            if (attachmentName == null) {
+                // just number it
+                //TODO change to use whatever else we have (url, size, creation, hash)
+                attachmentName = "attachment" + numAttachments;
+            }
+            if (attachment.getData() == null) {
+                // ignore for now
+                LOG.warn(".transformPegcornEmailIntoSMTP(): Ignored attachment {} ({}): empty data field; url processing not supported");
+                continue;
+            }
+
+            byte[] decodedAttachmentContent;
+            try {
+                decodedAttachmentContent = Base64.getDecoder().decode(attachment.getData()); //TODO probably should change to use InputStreams
+            } catch (IllegalArgumentException e) {
+                incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+                incomingUoW.setFailureDescription("Error decoding attachment " + attachmentName + ": " + e.getMessage());
+                LOG.warn(".transformPegcornEmailIntoSMTP(): Exit, Error decoding attachment {}", attachmentName, e);
+                return null;
+            }
+
+            ByteArrayDataSource dataSource = new ByteArrayDataSource(decodedAttachmentContent, attachment.getContentType());
+            DataHandler attachmentDataHandler = new DataHandler(dataSource);
+
+            // add as camel attachment
+            //TODO should be possible to add the size and creationTime (to Content-Disposition and Content-Length).
+            AttachmentMessage attachmentMessage = exchange.getIn(AttachmentMessage.class);
+//            AttachmentMessage attachmentMessage = exchange.getMessage(AttachmentMessage.class);
+            attachmentMessage.addAttachment(attachmentName, attachmentDataHandler);
         }
         
         // return the content

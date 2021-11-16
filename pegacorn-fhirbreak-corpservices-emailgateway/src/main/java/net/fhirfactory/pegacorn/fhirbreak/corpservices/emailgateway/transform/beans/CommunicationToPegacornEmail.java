@@ -21,6 +21,7 @@
  */
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.transform.beans;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,8 +29,9 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Communication;
 import org.hl7.fhir.r4.model.Communication.CommunicationPayloadComponent;
 import org.hl7.fhir.r4.model.ContactPoint;
@@ -47,6 +49,7 @@ import ca.uhn.fhir.parser.IParser;
 import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.EmailDataParcelManifestBuilder;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.PegacornEmail;
+import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.PegacornEmailAttachment;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.fhir.ContactPointHelper;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.fhir.ContactPointRetrieveException;
 import net.fhirfactory.pegacorn.petasos.model.uow.UoW;
@@ -91,7 +94,7 @@ public class CommunicationToPegacornEmail {
     }
     
 
-    public UoW transformCommunicationToEmail(UoW incomingUoW) {
+    public UoW transformCommunicationToEmail(UoW incomingUoW, Exchange exchange) {
         LOG.debug(".transformCommunicationToEmail(): Entry");
         
         // defensive programming
@@ -176,18 +179,43 @@ public class CommunicationToPegacornEmail {
         }
         
         boolean hasContent = false;
+        int numAttachments = 0;
         for (CommunicationPayloadComponent payloadComponent : payload) {
             if (payloadComponent.hasContentAttachment()) {
-                //TODO process as attachment
-                LOG.error(".transformCommunicationToEmail(): Attachments not yet processed");
+                numAttachments++;
+                //TODO do we have any use for language?
+                LOG.debug(".transformCommunicationToEmail(): Processing attachment {}", numAttachments);
+                Attachment communicationAttachment = payloadComponent.getContentAttachment();
+                
+                PegacornEmailAttachment emailAttachment = new PegacornEmailAttachment();
+                emailAttachment.setContentType(communicationAttachment.getContentType());
+                emailAttachment.setName(communicationAttachment.getTitle());
+                if (communicationAttachment.hasSize()) {
+                    emailAttachment.setSize(Long.valueOf(communicationAttachment.getSize())); // note that the FHIR attachment returns size as an int so not sure what it does if size is larger than max in size (~2MB)
+                }
+                if (communicationAttachment.hasCreation()) {
+                    //TODO check this
+                    emailAttachment.setCreationTime(communicationAttachment.getCreation().toInstant().atZone(ZoneId.systemDefault()));
+                }
+                if (communicationAttachment.hasHash()) {
+                    emailAttachment.setHash(communicationAttachment.getHashElement().getValueAsString());
+                }
+                if (communicationAttachment.hasData()) {
+                    emailAttachment.setData(communicationAttachment.getDataElement().getValueAsString());
+                }
+                email.getAttachments().add(emailAttachment);
                 
             } else if (payloadComponent.hasContentReference()) {
                 //TODO support this
-//                incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-//                incomingUoW.setFailureDescription("Reference payload type is not supported");
-//                LOG.warn(".transformCommunicationToEmail(): Exit, Unsupported reference payload type");
-//                return incomingUoW;
-                LOG.warn(".transformCommunicationToEmail(): Ignored unsupported reference payload type");
+                // Just log a warning and ignore this
+                String referenceDisplay = payloadComponent.getContentReference().getDisplay();
+                if (referenceDisplay == null) {
+                    referenceDisplay = "";
+                } else {
+                    referenceDisplay = ": display->" + referenceDisplay;
+                }
+                LOG.warn(".transformCommunicationToEmail(): Ignored unsupported reference payload type{}", referenceDisplay);
+                
             } else if (payloadComponent.hasContentStringType()) {
                 if (hasContent) {
                     // multiple content - not allowed as not sure how this should be processed
@@ -222,7 +250,7 @@ public class CommunicationToPegacornEmail {
         } catch (JsonProcessingException e) {
             LOG.error(".transformCommunicationToEmail(): Exit, Could not convert message to JSON! email->{}", email, e);
             incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-            incomingUoW.setFailureDescription(ExceptionUtils.getStackTrace(e));
+            incomingUoW.setFailureDescription("Could not convert email to JSON: " + e.getMessage());
             return(incomingUoW);
         }
         
@@ -237,6 +265,7 @@ public class CommunicationToPegacornEmail {
         egressUoWPayload.setPayloadManifest(manifest);
         
         incomingUoW.getEgressContent().addPayloadElement(egressUoWPayload);
+        incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_SUCCESS);
         
         LOG.debug(".transformCommunicationToEmail(): Exit");
         return(incomingUoW);

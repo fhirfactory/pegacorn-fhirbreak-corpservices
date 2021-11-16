@@ -21,6 +21,7 @@
  */
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // A basic class for the components of email that are supported
@@ -30,8 +31,8 @@ public class PegacornEmail {
     private List<String> to;
     private List<String> cc;
     private String subject;
-    private String content;           //TODO this may be long and could possibly be a stream instead
-    private List<byte[]> attachments; //TODO this may be long and in this case should probably be a reference to something in Hestia
+    private String content;               //TODO this may be long and could possibly be a stream instead
+    private List<PegacornEmailAttachment> attachments = new ArrayList<>();
     
     
     public String getFrom() {
@@ -64,12 +65,10 @@ public class PegacornEmail {
     public void setContent(String content) {
         this.content = content;
     }
-    public List<byte[]> getAttachments() {
+    public List<PegacornEmailAttachment> getAttachments() {
         return attachments;
     }
-    public void setAttachments(List<byte[]> attachments) {
+    public void setAttachments(List<PegacornEmailAttachment> attachments) {
         this.attachments = attachments;
     }
-    
-    
 }
