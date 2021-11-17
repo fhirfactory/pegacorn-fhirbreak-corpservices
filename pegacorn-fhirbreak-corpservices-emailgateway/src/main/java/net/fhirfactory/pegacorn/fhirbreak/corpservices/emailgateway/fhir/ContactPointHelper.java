@@ -24,8 +24,10 @@ package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.fhir;
 import java.util.List;
 
 import org.hl7.fhir.r4.model.ContactPoint;
+import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.Narrative;
 import org.hl7.fhir.r4.model.Patient;
+import org.hl7.fhir.r4.model.Period;
 import org.hl7.fhir.r4.model.Practitioner;
 import org.hl7.fhir.r4.model.PractitionerRole;
 import org.hl7.fhir.r4.model.Resource;
@@ -41,6 +43,8 @@ public class ContactPointHelper {
     public static String getTopRankContact(Resource contactableEntity, ContactPoint.ContactPointSystem contactPointType)
             throws ContactPointRetrieveException
     {
+        LOG.debug(".getTopRankContact(): Entry");
+        
         if (contactableEntity == null || contactPointType == null) {
             //TODO allow for null contactPointType (although does this mean any or specifically match unspecified type?)
             throw new IllegalArgumentException("Must specify contactableEntity and contactPointType");
@@ -64,19 +68,45 @@ public class ContactPointHelper {
         }
         
         // find the correct email contact point (if two of equal rank then use the first)
+        DateTimeType now = DateTimeType.now();
         ContactPoint topRankContact = null;
         for (ContactPoint contactPoint : contactPoints) {
+            LOG.trace(".getTopRankContact(): Checking contact point: type->{}, value->{}", contactPoint.getSystem(), contactPoint.getValue());
             if (contactPointType.equals(contactPoint.getSystem())) {
+                
                 if (topRankContact == null || (contactPoint.getRank() < topRankContact.getRank())) {
-                    //TODO only replace here if the contact point is still valid
-                    //     i.e. check the period
+                    
+                    // check the validity period, if none then treat as valid
+                    if (contactPoint.hasPeriod()) {
+                        Period validPeriod = contactPoint.getPeriod();
+                        if (validPeriod.hasStart() && now.before(validPeriod.getStartElement())) {
+                            if (LOG.isTraceEnabled()) {
+                                LOG.trace(".getTopRankContact(): Contact point ignored as before valid period: start->{}",
+                                        validPeriod.getStartElement().toHumanDisplay());
+                            }
+                            continue;
+                        }
+                        if (validPeriod.hasEnd() && now.after(validPeriod.getEndElement())) {
+                            if (LOG.isTraceEnabled()) {
+                                LOG.trace(".getTopRankContact(): Contact point ignored as after valid period: end->{}",
+                                        validPeriod.getEndElement().toHumanDisplay());
+                            }
+                            continue;
+                        }
+                    }
+
+                    LOG.trace(".getTopRankContact(): Updating top rank contact point: id->{}, value->{}",
+                            contactPoint.getId(), contactPoint.getValue());
                     topRankContact = contactPoint;
+                } else {
+                    LOG.trace(".getTopRankContact(): Contact is lower rank - skipped");
                 }
             } else {
-                LOG.trace(".transformCommunicationToEmail(): Ignored contact point of type {}", contactPoint.getSystem());
+                LOG.trace(".getTopRankContact(): Ignored contact point of type {}", contactPoint.getSystem());
             }
         }
         if (topRankContact == null) {
+            LOG.debug(".topRankContact(): No matching contact");
             String contactableEntityDisplay = contactableEntity.getId();
             if (StringUtils.isEmpty(contactableEntityDisplay)) {
                 Narrative narrative = null;
@@ -105,6 +135,7 @@ public class ContactPointHelper {
                     " found for " + entityType + " " + contactableEntityDisplay);
         }
         
+        LOG.debug(".getTopRankContact(): Exit, topRankContact.value->{}", topRankContact.getValue());
         return topRankContact.getValue();
     }
 }
