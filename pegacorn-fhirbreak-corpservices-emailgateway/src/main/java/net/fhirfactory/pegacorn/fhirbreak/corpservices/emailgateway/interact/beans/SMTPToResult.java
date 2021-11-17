@@ -36,6 +36,8 @@ import net.fhirfactory.pegacorn.petasos.model.uow.UoWProcessingOutcomeEnum;
 public class SMTPToResult {
 
     private static final Logger LOG = LoggerFactory.getLogger(SMTPToResult.class);
+    
+    private static final String CAMEL_MAIL_MESSAGE_ID_HEADER = "CamelMailMessageId";
 
     // get the results of the SMTP communication and set the UoW status
     public UoW toResult(Exchange exchange) {
@@ -68,34 +70,39 @@ public class SMTPToResult {
             LOG.trace(".toResult(): No failure recorded on exchange, setting outcome to success");
             uow.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_SUCCESS);
         }
-        
-        Object body = exchange.getIn().getBody(); 
-        if (body != null) {
-            LOG.trace(".toResult(): body->{}", body);
-            
-            // get as string
-            String bodyStr = body.toString();
-            
-            // add our output body from the SMTP id to the payload
-            //TODO work out what this could be and udpate
-            LOG.trace(".toResult(): Setting egress payload");
-            UoWPayload smtpResultPayload = new UoWPayload();
-            if (!StringUtils.isEmpty(bodyStr)) {
-                smtpResultPayload.setPayload(bodyStr);
+
+        // set the output to the mail Message-ID if present
+        String egressPayloadStr = exchange.getIn().getHeader(CAMEL_MAIL_MESSAGE_ID_HEADER).toString();
+        if (StringUtils.isEmpty(egressPayloadStr)) {
+            // use the body instead
+            Object body = exchange.getIn().getBody(); 
+            if (body != null) {
+                LOG.trace(".toResult(): body->{}", body);
+                egressPayloadStr = body.toString();
+            } else {
+                // just log and ignore - nothing should be using the output anyway
+                LOG.debug(".toResult(): Could not get Message-ID or email body for result output");
             }
-            
-            LOG.trace(".toResult(): Setting egress payload manifest");
-            DataParcelManifest manifest = SerializationUtils.clone(uow.getIngresContent().getPayloadManifest());
-            manifest.getContentDescriptor().setDataParcelDiscriminatorType("Response");
-            manifest.getContentDescriptor().setDataParcelDiscriminatorValue("ACK");
-            smtpResultPayload.setPayloadManifest(manifest);
-            
-            LOG.trace(".toResult(): Adding egress payload to UoW");
-            uow.getEgressContent().addPayloadElement(smtpResultPayload);
+        } else {
+            LOG.trace(".toResult(): mailMessageId->{}", egressPayloadStr);
         }
         
+        // add our output body from the SMTP id to the payload
+        LOG.trace(".toResult(): Setting egress payload");
+        UoWPayload smtpResultPayload = new UoWPayload();
+        smtpResultPayload.setPayload(egressPayloadStr);
         
-        LOG.warn("toResult(): Exit, uow->{}", uow);  //TODO change to debug
+        LOG.trace(".toResult(): Setting egress payload manifest");
+        DataParcelManifest manifest = SerializationUtils.clone(uow.getIngresContent().getPayloadManifest());
+        manifest.getContentDescriptor().setDataParcelDiscriminatorType("Response");
+        manifest.getContentDescriptor().setDataParcelDiscriminatorValue("ACK");
+        //TODO check if a resource type should be set here
+        smtpResultPayload.setPayloadManifest(manifest);
+        
+        LOG.trace(".toResult(): Adding egress payload to UoW");
+        uow.getEgressContent().addPayloadElement(smtpResultPayload);
+        
+        LOG.debug("toResult(): Exit, uow->{}", uow);
         return uow;
     }
 }
