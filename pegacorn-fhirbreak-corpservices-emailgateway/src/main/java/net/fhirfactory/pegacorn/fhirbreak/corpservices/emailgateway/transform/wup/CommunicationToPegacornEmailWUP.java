@@ -27,6 +27,7 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.hl7.fhir.r4.model.Communication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +64,7 @@ public class CommunicationToPegacornEmailWUP extends MOAStandardWUP {
 
     @Override
     protected List<DataParcelManifest> specifySubscriptionTopics() {
-        DataParcelManifest manifest = emailManifestBuilder.createManifest(EmailDataParcelManifestBuilder.TYPE_COMMUNICATION, "1.0.0");
+        DataParcelManifest manifest = emailManifestBuilder.createManifest(Communication.class, "1.0.0");
         List<DataParcelManifest> manifestList = new ArrayList<>();
         manifestList.add(manifest);
         return manifestList;

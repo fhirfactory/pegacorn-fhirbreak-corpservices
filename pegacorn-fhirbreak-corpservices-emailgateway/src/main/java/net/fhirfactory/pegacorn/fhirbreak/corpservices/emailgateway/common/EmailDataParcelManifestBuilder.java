@@ -33,21 +33,22 @@ import net.fhirfactory.pegacorn.components.dataparcel.valuesets.PolicyEnforcemen
 
 @ApplicationScoped
 public class EmailDataParcelManifestBuilder {
-    
-    public static final String TYPE_COMMUNICATION = "CommunicationAboutEmail";
-    public static final String TYPE_PEGARORN_EMAIL = "PegacornEmail";
 
     protected DataParcelTypeDescriptor createTypeDescriptor(String recordType, String version) {
         DataParcelTypeDescriptor typeDescriptor = new DataParcelTypeDescriptor();
         typeDescriptor.setDataParcelDefiner("FHIRFactory");
         typeDescriptor.setDataParcelCategory("Collaboration");
-        typeDescriptor.setDataParcelSubCategory("Communications");
+        typeDescriptor.setDataParcelSubCategory("Email");
         typeDescriptor.setDataParcelResource(recordType);
         typeDescriptor.setVersion(version);
         
         return (typeDescriptor);
     }
 
+    public DataParcelManifest createManifest(Class recordType, String version) {
+        return createManifest(recordType.getSimpleName(), version);
+    }
+    
     public DataParcelManifest createManifest(String recordType, String version) {
         DataParcelManifest manifest = new DataParcelManifest();
         manifest.setContentDescriptor(createTypeDescriptor(recordType, version));

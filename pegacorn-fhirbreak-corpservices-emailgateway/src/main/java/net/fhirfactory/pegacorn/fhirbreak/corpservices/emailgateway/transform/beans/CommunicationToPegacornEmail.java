@@ -258,7 +258,7 @@ public class CommunicationToPegacornEmail {
         UoWPayload egressUoWPayload = new UoWPayload();
         egressUoWPayload.setPayload(egressPayloadString);
         
-        DataParcelManifest manifest = emailManifestBuilder.createManifest(EmailDataParcelManifestBuilder.TYPE_PEGARORN_EMAIL, "1.0.0");
+        DataParcelManifest manifest = emailManifestBuilder.createManifest(PegacornEmail.class, "1.0.0");
         List<DataParcelManifest> manifestList = new ArrayList<>();
         manifestList.add(manifest);
         
