@@ -98,14 +98,26 @@ public class PegacornEmailToSMTP {
         
         // add to header fields
         LOG.trace(".transformPegcornEmailIntoSMTP(): Begin setting header fields");
-        if (email.getTo() != null) {
-            exchange.getIn().setHeader("to", email.getTo().stream().collect(Collectors.joining(","))); //TODO may need to add quotation around emails or escape things
-        }
         if (email.getFrom() != null) {
             exchange.getIn().setHeader("from", email.getFrom());
+        } else {
+            incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+            incomingUoW.setFailureDescription("no From address for email");
+            LOG.warn(".transformPegcornEmailIntoSMTP(): Exit, no From address for email");
+            return null;
+        }
+        if (email.getTo() != null && !email.getTo().isEmpty()) {
+            exchange.getIn().setHeader("to", email.getTo().stream().collect(Collectors.joining(","))); //TODO may need to add quotation around emails or escape things
+        } else {
+            incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+            incomingUoW.setFailureDescription("no To addresses for email");
+            LOG.warn(".transformPegcornEmailIntoSMTP(): Exit, no To addresses for email");
+            return null;
         }
         if (email.getSubject() != null) {
             exchange.getIn().setHeader("subject", email.getSubject());
+        } else {
+            LOG.warn(".transformPegcornEmailIntoSMTP(): No subject in email, continuing");
         }
         if (email.getCc() != null) {
             exchange.getIn().setHeader("cc", email.getCc().stream().collect(Collectors.joining(","))); //TODO may need to add quotation around emails or escape things

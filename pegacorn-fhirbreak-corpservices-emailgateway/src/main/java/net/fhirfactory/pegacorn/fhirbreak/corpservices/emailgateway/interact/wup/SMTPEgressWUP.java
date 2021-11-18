@@ -96,7 +96,10 @@ public class SMTPEgressWUP extends MOAStandardWUP {
         fromIncludingPetasosServices(ingresFeed())
             .routeId(getNameSet().getRouteCoreWUP())
             .bean(PegacornEmailToSMTP.class)
-            .to("smtp://{{" + PROP_SMTP_HOST + "}}:{{" + PROP_SMTP_PORT + "}}?debugMode=true")
+            .choice()
+                .when().simple("${body} != null")
+                .to("smtp://{{" + PROP_SMTP_HOST + "}}:{{" + PROP_SMTP_PORT + "}}?debugMode=true")
+            .end()
             .bean(SMTPToResult.class)
             .to(egressFeed());
     }

@@ -126,124 +126,119 @@ public class CommunicationToPegacornEmail {
         PegacornEmail email = new PegacornEmail();
         
         // get the sender
-        Resource sender = emailCommunication.getSenderTarget();
-        if (sender == null && emailCommunication.getSender() != null) {
-            sender = (Resource) emailCommunication.getSender().getResource();
-        }
-        if (sender == null) {
-            incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-            incomingUoW.setFailureDescription("No Sender in Communication");
-            LOG.warn(".transformCommunicationToEmail(): Exit, No Sender in Communication");
-            return incomingUoW;
-        }
-        try {
-            email.setFrom(ContactPointHelper.getTopRankContact(sender, ContactPoint.ContactPointSystem.EMAIL));
-        } catch (ContactPointRetrieveException e) {
-            incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-            incomingUoW.setFailureDescription(e.getMessage());
-            LOG.warn(".transformCommunicationToEmail(): Exit, Error getting top ranked contact point for sender->{}", sender, e);
-            return incomingUoW;
+        if (emailCommunication.hasSender()) {
+            Resource sender = emailCommunication.getSenderTarget();
+            if (sender == null && emailCommunication.getSender() != null) {
+                Reference senderRef = emailCommunication.getSender();
+                sender = (Resource) senderRef.getResource();
+            }
+            if (sender == null) {
+                incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+                incomingUoW.setFailureDescription("Could not get resource for sender");
+                LOG.warn(".transformCommunicationToEmail(): Exit, could not get resource for sender");
+                return incomingUoW;
+            }
+            try {
+                email.setFrom(ContactPointHelper.getTopRankContact(sender, ContactPoint.ContactPointSystem.EMAIL));
+            } catch (ContactPointRetrieveException e) {
+                incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+                incomingUoW.setFailureDescription(e.getMessage());
+                LOG.warn(".transformCommunicationToEmail(): Exit, Error getting top ranked contact point for sender->{}", sender, e);
+                return incomingUoW;
+            }
         }
         
         // get the recipients
         List<String> toEmails = new ArrayList<>();
-        List<Reference> recipients = emailCommunication.getRecipient();
-        if (recipients == null || recipients.isEmpty()) {
-            incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-            incomingUoW.setFailureDescription("No Recipients in Communication");
-            LOG.warn(".transformCommunicationToEmail(): Exit, No Recipients in Communication->{}", emailCommunication);
-            return incomingUoW;
-        }
-        for (Reference recipientRef: recipients) {
-            Resource recipient = (Resource) recipientRef.getResource();
-            //TODO handle cannot get from reference
-            try {
-                toEmails.add(ContactPointHelper.getTopRankContact(recipient, ContactPoint.ContactPointSystem.EMAIL));
-            } catch (ContactPointRetrieveException e) {
-                incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-                incomingUoW.setFailureDescription(e.getMessage());
-                LOG.warn(".transformCommunicationToEmail(): Exit, Error getting top ranked contact point for recipient->{}", recipient, e);
-                return incomingUoW;
+        if (emailCommunication.hasRecipient()) {
+            List<Reference> recipients = emailCommunication.getRecipient();
+            for (Reference recipientRef: recipients) {
+                Resource recipient = (Resource) recipientRef.getResource();
+                if (recipient == null) {
+                    incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+                    incomingUoW.setFailureDescription("Could not get resource for recipient: Reference->" + recipientRef);
+                    LOG.warn(".transformCommunicationToEmail(): Exit, could not get resource for recipient: Reference->{}", recipientRef);
+                    return incomingUoW;
+                }
+                try {
+                    toEmails.add(ContactPointHelper.getTopRankContact(recipient, ContactPoint.ContactPointSystem.EMAIL));
+                } catch (ContactPointRetrieveException e) {
+                    incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+                    incomingUoW.setFailureDescription(e.getMessage());
+                    LOG.warn(".transformCommunicationToEmail(): Exit, Error getting top ranked contact point for recipient->{}", recipient, e);
+                    return incomingUoW;
+                }
             }
         }
         email.setTo(toEmails);
         
         // get the content, subject and attachments
-        List<CommunicationPayloadComponent> payload = emailCommunication.getPayload();
-        if (payload == null) {
-            incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-            incomingUoW.setFailureDescription("No email content/attachments");
-            LOG.warn(".transformCommunicationToEmail(): Exit, No email content/attachments for email->{}", email);
-            return incomingUoW;
-        }
-        
-        boolean hasContent = false;
-        int numAttachments = 0;
-        for (CommunicationPayloadComponent payloadComponent : payload) {
-            if (payloadComponent.hasContentAttachment()) {
-                numAttachments++;
-                //TODO do we have any use for language?
-                LOG.debug(".transformCommunicationToEmail(): Processing attachment {}", numAttachments);
-                Attachment communicationAttachment = payloadComponent.getContentAttachment();
-                
-                PegacornEmailAttachment emailAttachment = new PegacornEmailAttachment();
-                emailAttachment.setContentType(communicationAttachment.getContentType());
-                emailAttachment.setName(communicationAttachment.getTitle());
-                if (communicationAttachment.hasSize()) {
-                    emailAttachment.setSize(Long.valueOf(communicationAttachment.getSize())); // note that the FHIR attachment returns size as an int so not sure what it does if size is larger than max in size (~2MB)
+        if (emailCommunication.hasPayload()) {
+            List<CommunicationPayloadComponent> payload = emailCommunication.getPayload();       
+            boolean hasContent = false;
+            int numAttachments = 0;
+            
+            for (CommunicationPayloadComponent payloadComponent : payload) {
+                if (payloadComponent.hasContentAttachment()) {
+                    numAttachments++;
+                    //TODO do we have any use for language?
+                    LOG.debug(".transformCommunicationToEmail(): Processing attachment {}", numAttachments);
+                    Attachment communicationAttachment = payloadComponent.getContentAttachment();
+                    
+                    PegacornEmailAttachment emailAttachment = new PegacornEmailAttachment();
+                    emailAttachment.setContentType(communicationAttachment.getContentType());
+                    emailAttachment.setName(communicationAttachment.getTitle());
+                    if (communicationAttachment.hasSize()) {
+                        emailAttachment.setSize(Long.valueOf(communicationAttachment.getSize())); // note that the FHIR attachment returns size as an int so not sure what it does if size is larger than max in size (~2MB)
+                    }
+                    if (communicationAttachment.hasCreation()) {
+                        //TODO check this (as not sure if time is local or GMT and what is wanted for end email)
+                        emailAttachment.setCreationTime(communicationAttachment.getCreation().toString());
+                    }
+                    if (communicationAttachment.hasHash()) {
+                        emailAttachment.setHash(communicationAttachment.getHashElement().getValueAsString());
+                    }
+                    if (communicationAttachment.hasData()) {
+                        emailAttachment.setData(communicationAttachment.getDataElement().getValueAsString());
+                    }
+                    if (communicationAttachment.hasUrl()) {
+                        emailAttachment.setUrl(communicationAttachment.getUrl());
+                    }
+                    email.getAttachments().add(emailAttachment);
+                    
+                } else if (payloadComponent.hasContentReference()) {
+                    //TODO support this
+                    // Just log a warning and ignore this
+                    String referenceDisplay = payloadComponent.getContentReference().getDisplay();
+                    if (referenceDisplay == null) {
+                        referenceDisplay = "";
+                    } else {
+                        referenceDisplay = ": display->" + referenceDisplay;
+                    }
+                    LOG.warn(".transformCommunicationToEmail(): Ignored unsupported reference payload type{}", referenceDisplay);
+                    
+                } else if (payloadComponent.hasContentStringType()) {
+                    if (hasContent) {
+                        // multiple content - not allowed as not sure how this should be processed
+                        //TODO check this.  This could make sense in some scenarios, particularly for multipart/alternative however
+                        //     would need an extension element to flag this
+                        incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+                        incomingUoW.setFailureDescription("Found multiple contentString payload elements");
+                        LOG.warn(".transformCommunicationToEmail(): Exit, Found multiple contentString payload elements for email->{}", email);
+                        return incomingUoW;
+                    }
+                    
+                    // set content
+                    String emailContent = payloadComponent.getContentStringType().primitiveValue();
+                    email.setContent(emailContent);
+                    
+                    // get the subject from the extension
+                    LOG.debug(".transformCommunicationToEmail(): Getting email subject from payload extension");
+                    Extension subjectExtension = payloadComponent.getExtensionByUrl(EMAIL_SUBJECT_EXTENSION_URL);
+                    if (subjectExtension != null) {
+                        email.setSubject(subjectExtension.getValue().primitiveValue());
+                    }
                 }
-                if (communicationAttachment.hasCreation()) {
-                    //TODO check this (as not sure if time is local or GMT and what is wanted for end email)
-                    emailAttachment.setCreationTime(communicationAttachment.getCreation().toString());
-                }
-                if (communicationAttachment.hasHash()) {
-                    emailAttachment.setHash(communicationAttachment.getHashElement().getValueAsString());
-                }
-                if (communicationAttachment.hasData()) {
-                    emailAttachment.setData(communicationAttachment.getDataElement().getValueAsString());
-                }
-                if (communicationAttachment.hasUrl()) {
-                    emailAttachment.setUrl(communicationAttachment.getUrl());
-                }
-                email.getAttachments().add(emailAttachment);
-                
-            } else if (payloadComponent.hasContentReference()) {
-                //TODO support this
-                // Just log a warning and ignore this
-                String referenceDisplay = payloadComponent.getContentReference().getDisplay();
-                if (referenceDisplay == null) {
-                    referenceDisplay = "";
-                } else {
-                    referenceDisplay = ": display->" + referenceDisplay;
-                }
-                LOG.warn(".transformCommunicationToEmail(): Ignored unsupported reference payload type{}", referenceDisplay);
-                
-            } else if (payloadComponent.hasContentStringType()) {
-                if (hasContent) {
-                    // multiple content - not allowed as not sure how this should be processed
-                    //TODO check this.  This could make sense in some scenarios, particularly for multipart/alternative however
-                    //     would need an extension element to flag this
-                    incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-                    incomingUoW.setFailureDescription("Found multiple contentString payload elements");
-                    LOG.warn(".transformCommunicationToEmail(): Exit, Found multiple contentString payload elements for email->{}", email);
-                    return incomingUoW;
-                }
-                
-                // set content
-                String emailContent = payloadComponent.getContentStringType().primitiveValue();
-                email.setContent(emailContent);
-                
-                // get the subject from the extension
-                LOG.debug(".transformCommunicationToEmail(): Getting email subject from payload extension");
-                Extension subjectExtension = payloadComponent.getExtensionByUrl(EMAIL_SUBJECT_EXTENSION_URL);
-                if (subjectExtension == null) {
-                    // don't allow email without a subject
-                    incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-                    incomingUoW.setFailureDescription("No subject extension found with contentString payload");
-                    LOG.warn(".transformCommunicationToEmail(): Exit, No subject extension found with contentString payload for email->{}", email);
-                    return incomingUoW;
-                }
-                email.setSubject(subjectExtension.getValue().primitiveValue());
             }
         }
         
