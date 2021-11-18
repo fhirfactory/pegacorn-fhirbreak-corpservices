@@ -221,6 +221,8 @@ public class CommunicationToPegacornEmail {
             } else if (payloadComponent.hasContentStringType()) {
                 if (hasContent) {
                     // multiple content - not allowed as not sure how this should be processed
+                    //TODO check this.  This could make sense in some scenarios, particularly for multipart/alternative however
+                    //     would need an extension element to flag this
                     incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
                     incomingUoW.setFailureDescription("Found multiple contentString payload elements");
                     LOG.warn(".transformCommunicationToEmail(): Exit, Found multiple contentString payload elements for email->{}", email);

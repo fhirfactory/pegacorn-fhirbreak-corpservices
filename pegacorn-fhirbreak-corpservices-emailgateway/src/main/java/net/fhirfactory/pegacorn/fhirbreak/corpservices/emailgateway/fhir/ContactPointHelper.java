@@ -99,7 +99,7 @@ public class ContactPointHelper {
                             contactPoint.getId(), contactPoint.getValue());
                     topRankContact = contactPoint;
                 } else {
-                    LOG.trace(".getTopRankContact(): Contact is lower rank - skipped");
+                    LOG.trace(".getTopRankContact(): Contact is lower (or equal) rank - skipped");
                 }
             } else {
                 LOG.trace(".getTopRankContact(): Ignored contact point of type {}", contactPoint.getSystem());
