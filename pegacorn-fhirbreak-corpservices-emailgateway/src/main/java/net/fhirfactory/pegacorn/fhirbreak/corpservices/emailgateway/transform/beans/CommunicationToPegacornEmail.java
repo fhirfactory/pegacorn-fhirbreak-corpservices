@@ -202,6 +202,9 @@ public class CommunicationToPegacornEmail {
                 if (communicationAttachment.hasData()) {
                     emailAttachment.setData(communicationAttachment.getDataElement().getValueAsString());
                 }
+                if (communicationAttachment.hasUrl()) {
+                    emailAttachment.setUrl(communicationAttachment.getUrl());
+                }
                 email.getAttachments().add(emailAttachment);
                 
             } else if (payloadComponent.hasContentReference()) {

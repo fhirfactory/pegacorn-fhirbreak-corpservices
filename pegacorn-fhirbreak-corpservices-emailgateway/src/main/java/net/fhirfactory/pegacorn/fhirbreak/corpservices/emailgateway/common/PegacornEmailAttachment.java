@@ -1,16 +1,14 @@
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common;
 
-
-// basic attachment with data base64 encoded inline
-//TODO extend for url reference based attachments
 public class PegacornEmailAttachment {
     
     private String name;
     private String contentType;
     private String data;
+    public String url;           // Not yet used in email
     private Long size;
     private String hash;
-    private String creationTime;
+    private String creationTime; // Not yet used in email
         
     public String getName() {
         return name;
@@ -37,6 +35,14 @@ public class PegacornEmailAttachment {
     
     public void setData(String data) {
         this.data = data;
+    }
+    
+    public String getUrl() {
+        return url;
+    }
+    
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public Long getSize() {
