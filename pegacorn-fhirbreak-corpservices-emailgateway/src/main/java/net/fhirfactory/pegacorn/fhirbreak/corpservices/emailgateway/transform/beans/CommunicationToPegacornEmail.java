@@ -21,7 +21,6 @@
  */
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.transform.beans;
 
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -194,8 +193,8 @@ public class CommunicationToPegacornEmail {
                     emailAttachment.setSize(Long.valueOf(communicationAttachment.getSize())); // note that the FHIR attachment returns size as an int so not sure what it does if size is larger than max in size (~2MB)
                 }
                 if (communicationAttachment.hasCreation()) {
-                    //TODO check this
-                    emailAttachment.setCreationTime(communicationAttachment.getCreation().toInstant().atZone(ZoneId.systemDefault()));
+                    //TODO check this (as not sure if time is local or GMT and what is wanted for end email)
+                    emailAttachment.setCreationTime(communicationAttachment.getCreation().toString());
                 }
                 if (communicationAttachment.hasHash()) {
                     emailAttachment.setHash(communicationAttachment.getHashElement().getValueAsString());

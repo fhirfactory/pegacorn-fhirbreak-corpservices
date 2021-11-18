@@ -1,6 +1,5 @@
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common;
 
-import java.time.ZonedDateTime;
 
 // basic attachment with data base64 encoded inline
 //TODO extend for url reference based attachments
@@ -11,7 +10,7 @@ public class PegacornEmailAttachment {
     private String data;
     private Long size;
     private String hash;
-    private ZonedDateTime creationTime;  //TODO comes in as a java.util.Date so possibly should change to this
+    private String creationTime;
         
     public String getName() {
         return name;
@@ -59,11 +58,11 @@ public class PegacornEmailAttachment {
         this.hash = hash;
     }
 
-    public ZonedDateTime getCreationTime() {
+    public String getCreationTime() {
         return creationTime;
     }
 
-    public void setCreationTime(ZonedDateTime creationTime) {
+    public void setCreationTime(String creationTime) {
         this.creationTime = creationTime;
     }
 }
