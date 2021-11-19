@@ -45,11 +45,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import ca.uhn.fhir.parser.IParser;
 import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;
+import net.fhirfactory.pegacorn.fhir.helpers.ContactPointHelper;
+import net.fhirfactory.pegacorn.fhir.helpers.exception.ContactPointRetrieveException;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.EmailDataParcelManifestBuilder;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.PegacornEmail;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.PegacornEmailAttachment;
-import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.fhir.ContactPointHelper;
-import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.fhir.ContactPointRetrieveException;
 import net.fhirfactory.pegacorn.petasos.model.uow.UoW;
 import net.fhirfactory.pegacorn.petasos.model.uow.UoWPayload;
 import net.fhirfactory.pegacorn.petasos.model.uow.UoWProcessingOutcomeEnum;
