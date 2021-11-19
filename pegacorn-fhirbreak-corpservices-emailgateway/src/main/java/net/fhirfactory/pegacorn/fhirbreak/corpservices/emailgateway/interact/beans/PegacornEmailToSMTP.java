@@ -180,7 +180,6 @@ public class PegacornEmailToSMTP {
             // add as camel attachment
             //TODO should be possible to add the size and creationTime (to Content-Disposition and Content-Length).
             AttachmentMessage attachmentMessage = exchange.getIn(AttachmentMessage.class);
-//            AttachmentMessage attachmentMessage = exchange.getMessage(AttachmentMessage.class);
             attachmentMessage.addAttachment(attachmentName, attachmentDataHandler);
         }
         
