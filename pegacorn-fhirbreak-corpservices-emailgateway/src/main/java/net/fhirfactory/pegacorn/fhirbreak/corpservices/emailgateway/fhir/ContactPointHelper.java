@@ -28,6 +28,7 @@ import org.hl7.fhir.r4.model.DateTimeType;
 import org.hl7.fhir.r4.model.Narrative;
 import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.Period;
+import org.hl7.fhir.r4.model.Person;
 import org.hl7.fhir.r4.model.Practitioner;
 import org.hl7.fhir.r4.model.PractitionerRole;
 import org.hl7.fhir.r4.model.Resource;
@@ -61,6 +62,9 @@ public class ContactPointHelper {
                 break;
             case Patient:
                 contactPoints = ((Patient) contactableEntity).getTelecom();
+                break;
+            case Person:
+                contactPoints = ((Person) contactableEntity).getTelecom();
                 break;
             //TODO could do other references but not sure if they make sense
             default:
@@ -119,6 +123,9 @@ public class ContactPointHelper {
                         break;
                     case Patient:
                         narrative = ((Patient) contactableEntity).getText();
+                        break;
+                    case Person:
+                        narrative = ((Person) contactableEntity).getText();
                         break;
                     default:
                         // no handling for other types
