@@ -151,7 +151,7 @@ public class CommunicationToPegacornEmail {
                 return incomingUoW;
             }
             try {
-                email.setFrom(ContactPointHelper.getTopRankContact(sender, ContactPoint.ContactPointSystem.EMAIL));
+                email.setFrom(ContactPointHelper.getTopRankContact(sender, ContactPoint.ContactPointSystem.EMAIL).getValue());
             } catch (ContactPointRetrieveException e) {
                 incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
                 incomingUoW.setFailureDescription(FAILURE_NO_EMAIL_FOR_SENDER + ": " + e.getMessage());
@@ -173,7 +173,7 @@ public class CommunicationToPegacornEmail {
                     return incomingUoW;
                 }
                 try {
-                    toEmails.add(ContactPointHelper.getTopRankContact(recipient, ContactPoint.ContactPointSystem.EMAIL));
+                    toEmails.add(ContactPointHelper.getTopRankContact(recipient, ContactPoint.ContactPointSystem.EMAIL).getValue());
                 } catch (ContactPointRetrieveException e) {
                     incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
                     incomingUoW.setFailureDescription(FAILURE_NO_EMAIL_FOR_RECIPIENT + ": " + e.getMessage());

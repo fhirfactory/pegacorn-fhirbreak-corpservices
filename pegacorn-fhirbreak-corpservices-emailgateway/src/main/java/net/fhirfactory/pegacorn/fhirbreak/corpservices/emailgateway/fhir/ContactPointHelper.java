@@ -35,19 +35,33 @@ import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.thymeleaf.util.StringUtils;
 
 public class ContactPointHelper {
     
     private static final Logger LOG = LoggerFactory.getLogger(ContactPointHelper.class);
 
-    public static String getTopRankContact(Resource contactableEntity, ContactPoint.ContactPointSystem contactPointType)
+    /**
+     * @return true if the contactPoint has no period or if the current time is within the its period
+     */
+    public static boolean isActive(ContactPoint contactPoint) {
+        if (!contactPoint.hasPeriod()) {
+            return true;
+        }
+        Period validPeriod = contactPoint.getPeriod();
+        DateTimeType now = DateTimeType.now();
+        return (!validPeriod.hasStart() || now.after(validPeriod.getStartElement())) &&
+               (!validPeriod.hasEnd() || now.before(validPeriod.getEndElement()));
+    }
+    
+    /**
+     * @return The top ranked contact point.  Throws a NoMatchingContactPointException if none found 
+     */
+    public static ContactPoint getTopRankContact(Resource contactableEntity, ContactPoint.ContactPointSystem contactPointType)
             throws ContactPointRetrieveException
     {
         LOG.debug(".getTopRankContact(): Entry");
         
         if (contactableEntity == null || contactPointType == null) {
-            //TODO allow for null contactPointType (although does this mean any or specifically match unspecified type?)
             throw new IllegalArgumentException("Must specify contactableEntity and contactPointType");
         }
         
@@ -77,31 +91,14 @@ public class ContactPointHelper {
         for (ContactPoint contactPoint : contactPoints) {
             LOG.trace(".getTopRankContact(): Checking contact point: type->{}, value->{}", contactPoint.getSystem(), contactPoint.getValue());
             if (contactPointType.equals(contactPoint.getSystem())) {
-                
                 if (topRankContact == null || (contactPoint.getRank() < topRankContact.getRank())) {
-                    
-                    // check the validity period, if none then treat as valid
-                    if (contactPoint.hasPeriod()) {
-                        Period validPeriod = contactPoint.getPeriod();
-                        if (validPeriod.hasStart() && now.before(validPeriod.getStartElement())) {
-                            if (LOG.isTraceEnabled()) {
-                                LOG.trace(".getTopRankContact(): Contact point ignored as before valid period: start->{}",
-                                        validPeriod.getStartElement().toHumanDisplay());
-                            }
-                            continue;
-                        }
-                        if (validPeriod.hasEnd() && now.after(validPeriod.getEndElement())) {
-                            if (LOG.isTraceEnabled()) {
-                                LOG.trace(".getTopRankContact(): Contact point ignored as after valid period: end->{}",
-                                        validPeriod.getEndElement().toHumanDisplay());
-                            }
-                            continue;
-                        }
+                    if (isActive(contactPoint)) {
+                        LOG.trace(".getTopRankContact(): Updating top rank contact point: id->{}, value->{}",
+                                contactPoint.getId(), contactPoint.getValue());
+                        topRankContact = contactPoint;
+                    } else {
+                        LOG.trace(".getTopRankContact(): Contact is not active - skipped");
                     }
-
-                    LOG.trace(".getTopRankContact(): Updating top rank contact point: id->{}, value->{}",
-                            contactPoint.getId(), contactPoint.getValue());
-                    topRankContact = contactPoint;
                 } else {
                     LOG.trace(".getTopRankContact(): Contact is lower (or equal) rank - skipped");
                 }
@@ -111,8 +108,10 @@ public class ContactPointHelper {
         }
         if (topRankContact == null) {
             LOG.debug(".topRankContact(): No matching contact");
-            String contactableEntityDisplay = contactableEntity.getId();
-            if (StringUtils.isEmpty(contactableEntityDisplay)) {
+            String contactableEntityDisplay;
+            if (contactableEntity.hasId()) {
+                contactableEntityDisplay = contactableEntity.getId();
+            } else {
                 Narrative narrative = null;
                 switch (entityType) {
                     case Practitioner:
@@ -133,6 +132,7 @@ public class ContactPointHelper {
                 if (narrative != null) {
                     contactableEntityDisplay = narrative.primitiveValue();
                 } else {
+                    // likely just reference text but at least it has the class name
                     contactableEntityDisplay = contactableEntity.toString();
                 }
             }
@@ -143,6 +143,6 @@ public class ContactPointHelper {
         }
         
         LOG.debug(".getTopRankContact(): Exit, topRankContact.value->{}", topRankContact.getValue());
-        return topRankContact.getValue();
+        return topRankContact;
     }
 }
