@@ -21,10 +21,14 @@
  */
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.beans;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Base64;
 import java.util.stream.Collectors;
 
 import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.URLDataSource;
 import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.camel.Exchange;
@@ -43,6 +47,7 @@ import net.fhirfactory.pegacorn.petasos.model.uow.UoW;
 import net.fhirfactory.pegacorn.petasos.model.uow.UoWProcessingOutcomeEnum;
 
 //TODO possibly change name and just allow to support IMAP and POP3 also (as they essentially use the same parameters in camel)
+// Note that the size, hash and creationTime of the email are currently not passed through or used
 public class PegacornEmailToSMTP {
     
     private static final Logger LOG = LoggerFactory.getLogger(PegacornEmailToSMTP.class);
@@ -124,9 +129,8 @@ public class PegacornEmailToSMTP {
         }
         int numAttachments = 0;
         for (PegacornEmailAttachment attachment : email.getAttachments()) {
-            //TODO if no data get attachment from url if possible
-            //TODO if size and or hash then check this (either immediately if small or when streaming if larger)
-            //TODO try to retain creation metadata on file is given as in the data field
+            //TODO if size and or hash then either check these or pass them into values for the email
+            //TODO if the email has creationTime then add this to the Content-Disposition as creation-date
             numAttachments++;
             LOG.trace(".transformPegcornEmailIntoSMTP(): Processing attachment {}", numAttachments);
             String attachmentName = attachment.getName();
@@ -135,23 +139,42 @@ public class PegacornEmailToSMTP {
                 //TODO change to use whatever else we have (url, size, creation, hash)
                 attachmentName = "attachment" + numAttachments;
             }
+            
+            DataSource dataSource;
             if (attachment.getData() == null) {
-                // ignore for now
-                LOG.warn(".transformPegcornEmailIntoSMTP(): Ignored attachment {} ({}): empty data field; url processing not supported");
-                continue;
+                if (attachment.getUrl() == null) {
+                    // ignore for now
+                    //TODO check if this should count as a failure
+                    LOG.warn(".transformPegcornEmailIntoSMTP(): Ignored attachment {} ({}): empty data and url fields");
+                    continue;
+                }
+                URL url;
+                try {
+                    url = new URL(attachment.getUrl());
+                } catch (MalformedURLException e) {
+                    //TODO check if should ignore and continue instead
+                    incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+                    incomingUoW.setFailureDescription("Error with attachment url: " + attachment.getUrl() + ": " + e.getMessage());
+                    LOG.warn(".transformPegcornEmailIntoSMTP(): Exit, Error with attachment url->{}", attachment.getUrl(), e);
+                    return null;
+                }
+                
+                // currently we don't check the url for possible security issues.  This is assuming the source is trusted. 
+                //TODO add some security checks around this
+                dataSource = new URLDataSource(url);
+            } else {
+                byte[] decodedAttachmentContent;
+                try {
+                    decodedAttachmentContent = Base64.getDecoder().decode(attachment.getData()); //TODO probably should change to use InputStreams
+                } catch (IllegalArgumentException e) {
+                    incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
+                    incomingUoW.setFailureDescription("Error decoding attachment " + attachmentName + ": " + e.getMessage());
+                    LOG.warn(".transformPegcornEmailIntoSMTP(): Exit, Error decoding attachment {}", attachmentName, e);
+                    return null;
+                }
+    
+                dataSource = new ByteArrayDataSource(decodedAttachmentContent, attachment.getContentType());
             }
-
-            byte[] decodedAttachmentContent;
-            try {
-                decodedAttachmentContent = Base64.getDecoder().decode(attachment.getData()); //TODO probably should change to use InputStreams
-            } catch (IllegalArgumentException e) {
-                incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-                incomingUoW.setFailureDescription("Error decoding attachment " + attachmentName + ": " + e.getMessage());
-                LOG.warn(".transformPegcornEmailIntoSMTP(): Exit, Error decoding attachment {}", attachmentName, e);
-                return null;
-            }
-
-            ByteArrayDataSource dataSource = new ByteArrayDataSource(decodedAttachmentContent, attachment.getContentType());
             DataHandler attachmentDataHandler = new DataHandler(dataSource);
 
             // add as camel attachment

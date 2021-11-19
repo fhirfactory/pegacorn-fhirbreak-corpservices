@@ -5,7 +5,7 @@ public class PegacornEmailAttachment {
     private String name;
     private String contentType;
     private String data;
-    public String url;           // Not yet used in email
+    public String url;
     private Long size;
     private String hash;
     private String creationTime; // Not yet used in email
