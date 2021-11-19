@@ -28,7 +28,6 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Communication;
@@ -63,6 +62,13 @@ public class CommunicationToPegacornEmail {
 
     private static final Logger LOG = LoggerFactory.getLogger(CommunicationToPegacornEmail.class);
     
+    protected static final String FAILURE_MULTIPLE_CONTENT = "Found multiple contentString payload elements";
+    protected static final String FAILURE_INVALID_SENDER_REFERENCE = "Could not get resource for sender";
+    protected static final String FAILURE_INVALID_RECIPIENT_REFERENCE = "Could not get resource for recipient";
+    protected static final String FAILURE_NO_EMAIL_FOR_SENDER = "Could not get email for sender";
+    protected static final String FAILURE_NO_EMAIL_FOR_RECIPIENT = "Could not get email for recipient";
+    protected static final String FAILURE_CONVERT_EMAIL_TO_JSON = "Could not convert email to JSON";
+    
     private ObjectMapper jsonMapper; //TODO make common
     private IParser fhirParser;
     private boolean initialised;
@@ -74,6 +80,12 @@ public class CommunicationToPegacornEmail {
     
     
     public CommunicationToPegacornEmail() {
+    }
+    
+    // just for ease of testing for now
+    protected CommunicationToPegacornEmail(FHIRContextUtility fhirContextUtility, EmailDataParcelManifestBuilder emailManifestBuilder) {
+        this.fhirContextUtility = fhirContextUtility;
+        this.emailManifestBuilder = emailManifestBuilder;
     }
     
     @PostConstruct
@@ -93,7 +105,7 @@ public class CommunicationToPegacornEmail {
     }
     
 
-    public UoW transformCommunicationToEmail(UoW incomingUoW, Exchange exchange) {
+    public UoW transformCommunicationToEmail(UoW incomingUoW) {
         LOG.debug(".transformCommunicationToEmail(): Entry");
         
         // defensive programming
@@ -134,16 +146,16 @@ public class CommunicationToPegacornEmail {
             }
             if (sender == null) {
                 incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-                incomingUoW.setFailureDescription("Could not get resource for sender");
-                LOG.warn(".transformCommunicationToEmail(): Exit, could not get resource for sender");
+                incomingUoW.setFailureDescription(FAILURE_INVALID_SENDER_REFERENCE);
+                LOG.warn(".transformCommunicationToEmail(): Exit, {}", FAILURE_INVALID_SENDER_REFERENCE); //TODO add reference
                 return incomingUoW;
             }
             try {
                 email.setFrom(ContactPointHelper.getTopRankContact(sender, ContactPoint.ContactPointSystem.EMAIL));
             } catch (ContactPointRetrieveException e) {
                 incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-                incomingUoW.setFailureDescription(e.getMessage());
-                LOG.warn(".transformCommunicationToEmail(): Exit, Error getting top ranked contact point for sender->{}", sender, e);
+                incomingUoW.setFailureDescription(FAILURE_NO_EMAIL_FOR_SENDER + ": " + e.getMessage());
+                LOG.warn(".transformCommunicationToEmail(): Exit, {}->{}", FAILURE_NO_EMAIL_FOR_SENDER, sender, e);
                 return incomingUoW;
             }
         }
@@ -156,16 +168,16 @@ public class CommunicationToPegacornEmail {
                 Resource recipient = (Resource) recipientRef.getResource();
                 if (recipient == null) {
                     incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-                    incomingUoW.setFailureDescription("Could not get resource for recipient: Reference->" + recipientRef);
-                    LOG.warn(".transformCommunicationToEmail(): Exit, could not get resource for recipient: Reference->{}", recipientRef);
+                    incomingUoW.setFailureDescription(FAILURE_INVALID_RECIPIENT_REFERENCE);
+                    LOG.warn(".transformCommunicationToEmail(): Exit, {}", FAILURE_INVALID_RECIPIENT_REFERENCE); //TODO add reference
                     return incomingUoW;
                 }
                 try {
                     toEmails.add(ContactPointHelper.getTopRankContact(recipient, ContactPoint.ContactPointSystem.EMAIL));
                 } catch (ContactPointRetrieveException e) {
                     incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-                    incomingUoW.setFailureDescription(e.getMessage());
-                    LOG.warn(".transformCommunicationToEmail(): Exit, Error getting top ranked contact point for recipient->{}", recipient, e);
+                    incomingUoW.setFailureDescription(FAILURE_NO_EMAIL_FOR_RECIPIENT + ": " + e.getMessage());
+                    LOG.warn(".transformCommunicationToEmail(): Exit, {}->{}", FAILURE_NO_EMAIL_FOR_SENDER, recipient, e);
                     return incomingUoW;
                 }
             }
@@ -223,8 +235,8 @@ public class CommunicationToPegacornEmail {
                         //TODO check this.  This could make sense in some scenarios, particularly for multipart/alternative however
                         //     would need an extension element to flag this
                         incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-                        incomingUoW.setFailureDescription("Found multiple contentString payload elements");
-                        LOG.warn(".transformCommunicationToEmail(): Exit, Found multiple contentString payload elements for email->{}", email);
+                        incomingUoW.setFailureDescription(FAILURE_MULTIPLE_CONTENT);
+                        LOG.warn(".transformCommunicationToEmail(): Exit, {} for email->{}", FAILURE_MULTIPLE_CONTENT, email);
                         return incomingUoW;
                     }
                     hasContent = true;
@@ -250,7 +262,7 @@ public class CommunicationToPegacornEmail {
         } catch (JsonProcessingException e) {
             LOG.error(".transformCommunicationToEmail(): Exit, Could not convert message to JSON! email->{}", email, e);
             incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
-            incomingUoW.setFailureDescription("Could not convert email to JSON: " + e.getMessage());
+            incomingUoW.setFailureDescription(FAILURE_CONVERT_EMAIL_TO_JSON + ": " + e.getMessage());
             return(incomingUoW);
         }
         

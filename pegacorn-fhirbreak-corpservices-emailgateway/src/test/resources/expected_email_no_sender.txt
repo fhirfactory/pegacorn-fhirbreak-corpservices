@@ -1,0 +1,24 @@
+{
+  "from" : null,
+  "to" : [ "to@nowhere.com.au" ],
+  "cc" : null,
+  "subject" : "Subject Line",
+  "content" : "Email Content",
+  "attachments" : [ {
+    "name" : "basic_text.txt",
+    "contentType" : "text/plain",
+    "data" : "VGhpcyBpcyBhIHNtYWxsIHRleHQgYXR0YWNobWVudA==",
+    "url" : null,
+    "size" : 31,
+    "hash" : "5ee9c6d6cb43556569526159f340da7261716bc9",
+    "creationTime" : "Mon Nov 15 09:01:22 AEDT 2021"
+  }, {
+    "name" : "pegacorn_small.png",
+    "contentType" : "image/png",
+    "data" : "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAJJSURBVDhPdZPfS5NRGMe/2+s20DlvKkRGITGksqsy7CKE6MYgKwOF+gdC6kbqortdaYG4MAIzUkq7UCK1nyiuizTn1LQ5G7alzjbHdNP5Y+63Pr3v8cy20T4X7/N8z3vO95z3Oc8LykJH1yyNmpe5yo4cWVCpBJSdKcSszc/0m347i5lkNai+ooMirwlyuQzx+C7e9jv4m3SyGvjXwnhsuASZaGCe9EKrzceg0YmYaJZI7PFZ3GDBuYHgTowNJBE/D+FIAoI4Y9jkxq2aE9BoVFAqBOTkpOwrFSIaTdCde0P0rN1C1p8+aYjCkTgdPdXG8rMVnXTtZh+tB8IUEeemIpMejc1mxGJ7OHI4Fy7XFhr0F0S9C6VSQKGuFV7HbYxNeFBeVsS3TUEycLm3pEAP9MNUoH1C9t/rTD8yjNPSn03SN44y/T/S+qDvg4PaO61UfPo5vXg1wxYbnn6nwEaE9cScfY3aOiw0PbPCV2T0gSZfhbp6I25U6VB8rACl5S/R1DIB0RQVld1493kepScPYcS0zFdkXKNtzg91ngK11SW4WNkDQZDh6uXj+DSwCLVaCXWuAufPFaHmegm6um0Qi7pfgyR19UM09cNLS65NdtwkI2NuunvfSINfnHyEyO3ZZvHAwOcP0cNmM1fptLROsVhV28v+kVQODCanvSxKxVr17bA8yeseG+sViVAoRh8HFlguwQy+fnMxkSQUivOMqPe9g3459q81yfxigGeiwXYwSt6VIJfphMNxslhXufqHdBrTuEfMiP4CO4VwnYLqs3oAAAAASUVORK5CYII=",
+    "url" : null,
+    "size" : null,
+    "hash" : null,
+    "creationTime" : null
+  } ]
+}
