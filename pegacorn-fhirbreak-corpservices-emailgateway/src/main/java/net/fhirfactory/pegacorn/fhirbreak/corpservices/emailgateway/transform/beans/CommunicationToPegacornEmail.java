@@ -227,6 +227,7 @@ public class CommunicationToPegacornEmail {
                         LOG.warn(".transformCommunicationToEmail(): Exit, Found multiple contentString payload elements for email->{}", email);
                         return incomingUoW;
                     }
+                    hasContent = true;
                     
                     // set content
                     String emailContent = payloadComponent.getContentStringType().primitiveValue();
