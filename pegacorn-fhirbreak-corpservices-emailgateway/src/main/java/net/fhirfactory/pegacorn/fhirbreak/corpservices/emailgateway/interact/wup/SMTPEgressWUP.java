@@ -42,16 +42,25 @@ import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessing
 @ApplicationScoped
 public class SMTPEgressWUP extends MOAStandardWUP {
     
-    public static final String PROP_SMTP_HOST = "smtp.host";
-    public static final String PROP_SMTP_PORT = "smtp.port";
-    public static final String PROP_SMTP_DEBUG_MODE = "stmp.debug";
-    public static final String PROP_SMTP_CONNECTION_TIMEOUT = "smtp.timeout";
+    // mail properties - same names as javax.mail, which is used under the hood, except for mail.smtp.debug which would just
+    // be mail.debug
+    public static final String PROP_SMTP_HOST = "mail.smtp.host";
+    public static final String PROP_SMTP_PORT = "mail.smtp.port";
+    public static final String PROP_SMTP_DEBUG = "mail.smtp.debug";
+    public static final String PROP_SMTP_CONNECTION_TIMEOUT = "mail.smtp.connectiontimeout";
+    
+    // environment variables are only used if properties do not exist
+    public static final String ENV_SMTP_HOST = "MAIL_SMTP_HOST";
+    public static final String ENV_SMTP_PORT = "MAIL_SMTP_PORT";
+    public static final String ENV_SMTP_DEBUG = "MAIL_SMTP_DEBUG";
+    public static final String ENV_SMTP_CONNECTION_TIMEOUT = "MAIL_SMTP_TIMEOUT";
     
     // this can be altered to use optional property placeholders after upgrading to Apache Camel 3.9 or later
     private static final String SMTP_CAMEL_ENDPOINT =
-            "smtp://{{" + PROP_SMTP_HOST + "}}:{{" + PROP_SMTP_PORT + ":25}}" +
-            "?debugMode={{" + PROP_SMTP_DEBUG_MODE + ":false}}" +
-            "&connectionTimeout={{" + PROP_SMTP_CONNECTION_TIMEOUT + ":30000}}";
+            "smtp://{{" + PROP_SMTP_HOST + ":{{env:" + ENV_SMTP_HOST + "}}}}" +
+            ":{{" + PROP_SMTP_PORT + ":{{env:" + ENV_SMTP_PORT + ":25}}}}" +
+            "?debugMode={{" + PROP_SMTP_DEBUG + ":{{env:" + ENV_SMTP_DEBUG + ":false}}}}" +
+            "&connectionTimeout={{" + PROP_SMTP_CONNECTION_TIMEOUT + ":{{env:" + ENV_SMTP_CONNECTION_TIMEOUT + ":30000}}}}";
     
     private static final Logger LOG = LoggerFactory.getLogger(SMTPEgressWUP.class);
     private static final String WUP_VERSION = "1.0.0";
