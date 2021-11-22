@@ -39,7 +39,7 @@ import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.bea
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.MOAStandardWUP;
 
-//@ApplicationScoped
+@ApplicationScoped
 public class SMTPEgressWUP extends MOAStandardWUP {
     
     public static final String PROP_SMTP_HOST = "smtp.host";
