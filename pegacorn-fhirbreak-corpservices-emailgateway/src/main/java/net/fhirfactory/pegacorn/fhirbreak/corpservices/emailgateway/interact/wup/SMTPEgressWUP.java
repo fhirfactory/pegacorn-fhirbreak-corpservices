@@ -42,8 +42,16 @@ import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessing
 //@ApplicationScoped
 public class SMTPEgressWUP extends MOAStandardWUP {
     
-    public static final String PROP_SMTP_HOST = "smtp.hostname";
+    public static final String PROP_SMTP_HOST = "smtp.host";
     public static final String PROP_SMTP_PORT = "smtp.port";
+    public static final String PROP_SMTP_DEBUG_MODE = "stmp.debug";
+    public static final String PROP_SMTP_CONNECTION_TIMEOUT = "smtp.timeout";
+    
+    // this can be altered to use optional property placeholders after upgrading to Apache Camel 3.9 or later
+    private static final String SMTP_CAMEL_ENDPOINT =
+            "smtp://{{" + PROP_SMTP_HOST + "}}:{{" + PROP_SMTP_PORT + ":25}}" +
+            "?debugMode={{" + PROP_SMTP_DEBUG_MODE + ":false}}" +
+            "&connectionTimeout={{" + PROP_SMTP_CONNECTION_TIMEOUT + ":30000}}";
     
     private static final Logger LOG = LoggerFactory.getLogger(SMTPEgressWUP.class);
     private static final String WUP_VERSION = "1.0.0";
@@ -98,7 +106,7 @@ public class SMTPEgressWUP extends MOAStandardWUP {
             .bean(PegacornEmailToSMTP.class)
             .choice()
                 .when().simple("${body} != null")
-                .to("smtp://{{" + PROP_SMTP_HOST + "}}:{{" + PROP_SMTP_PORT + "}}?debugMode=true")
+                .to(SMTP_CAMEL_ENDPOINT)
             .end()
             .bean(SMTPToResult.class)
             .to(egressFeed());
