@@ -32,6 +32,7 @@ import javax.activation.URLDataSource;
 import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.attachment.Attachment;
 import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -129,8 +130,7 @@ public class PegacornEmailToSMTP {
         }
         int numAttachments = 0;
         for (PegacornEmailAttachment attachment : email.getAttachments()) {
-            //TODO if size and or hash then either check these or pass them into values for the email
-            //TODO if the email has creationTime then add this to the Content-Disposition as creation-date
+
             numAttachments++;
             LOG.trace(".transformPegcornEmailIntoSMTP(): Processing attachment {}", numAttachments);
             String attachmentName = attachment.getName();
@@ -178,9 +178,23 @@ public class PegacornEmailToSMTP {
             DataHandler attachmentDataHandler = new DataHandler(dataSource);
 
             // add as camel attachment
-            //TODO should be possible to add the size and creationTime (to Content-Disposition and Content-Length).
             AttachmentMessage attachmentMessage = exchange.getIn(AttachmentMessage.class);
             attachmentMessage.addAttachment(attachmentName, attachmentDataHandler);
+
+            // put in the size and creation date if present
+            //TODO also add in the sha1 hash if there is somewhere to put it.  There does not seem to be a standard header for this so it is left for now
+            if (attachment.getSize() != null || attachment.getCreationTime() != null) {
+                Attachment justAdded = attachmentMessage.getAttachmentObject(attachmentName);
+                String contentDispositionHeader = "attachment; filename=" + attachmentName;  // these values will be overwritten later by Apache Camel but set correctly to be on the safe side
+                if (attachment.getCreationTime() != null) {
+                    //TODO convert to RFC2822 format rather than just putting in as is (either here or in CommunicationToPegacornEmail)
+                    contentDispositionHeader += "; creation-date=\"" + attachment.getCreationTime() + "\"";
+                }
+                if (attachment.getSize() != null) {
+                    contentDispositionHeader += "; size=" + attachment.getSize();
+                }
+                justAdded.setHeader("Content-Disposition", contentDispositionHeader);
+            }
         }
         
         // return the content
