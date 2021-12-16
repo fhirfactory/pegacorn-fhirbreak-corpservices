@@ -125,7 +125,7 @@ public class CommunicationToPegacornEmail {
         }
         String incomingPayload = incomingUoW.getIngresContent().getPayload();
         if (StringUtils.isEmpty(incomingPayload)){
-            LOG.warn(".transformCommunicationToEmail(): Exit, PegacornSMSMessage payload is empty!");
+            LOG.warn(".transformCommunicationToEmail(): Exit, Communication payload is empty!");
             incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
             incomingUoW.setFailureDescription("UoW ingres payload content is empty!");
             return(incomingUoW);
@@ -177,7 +177,7 @@ public class CommunicationToPegacornEmail {
                 } catch (ContactPointRetrieveException e) {
                     incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
                     incomingUoW.setFailureDescription(FAILURE_NO_EMAIL_FOR_RECIPIENT + ": " + e.getMessage());
-                    LOG.warn(".transformCommunicationToEmail(): Exit, {}->{}", FAILURE_NO_EMAIL_FOR_SENDER, recipient, e);
+                    LOG.warn(".transformCommunicationToEmail(): Exit, {}->{}", FAILURE_NO_EMAIL_FOR_RECIPIENT, recipient, e);
                     return incomingUoW;
                 }
             }
