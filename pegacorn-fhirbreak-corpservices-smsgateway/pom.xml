@@ -162,14 +162,14 @@
         </dependency>
         <dependency>
             <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-buildingblocks-edge</artifactId>
+            <artifactId>pegacorn-buildingblocks-processingplant</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-buildingblocks-processingplant</artifactId>
+            <artifactId>pegacorn-buildingblocks-workunitprocessors</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
