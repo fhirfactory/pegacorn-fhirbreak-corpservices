@@ -1,0 +1,4 @@
+{
+  "phoneNumber" : "0491 578 888",
+  "message" : "SMS Content"
+}

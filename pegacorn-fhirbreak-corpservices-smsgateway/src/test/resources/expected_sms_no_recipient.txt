@@ -1,0 +1,4 @@
+{
+  "phoneNumber" : null,
+  "message" : "SMS Content"
+}
