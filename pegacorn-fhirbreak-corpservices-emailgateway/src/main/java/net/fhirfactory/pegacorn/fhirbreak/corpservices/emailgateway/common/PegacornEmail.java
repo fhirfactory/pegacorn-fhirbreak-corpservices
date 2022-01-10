@@ -32,6 +32,7 @@ public class PegacornEmail {
     private List<String> cc;
     private String subject;
     private String content;               //TODO this may be long and could possibly be a stream instead
+    private String contentType;
     private List<PegacornEmailAttachment> attachments = new ArrayList<>();
     
     
@@ -64,6 +65,12 @@ public class PegacornEmail {
     }
     public void setContent(String content) {
         this.content = content;
+    }
+    public String getContentType() {
+        return contentType;
+    }
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
     public List<PegacornEmailAttachment> getAttachments() {
         return attachments;

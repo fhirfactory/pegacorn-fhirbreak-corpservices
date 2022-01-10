@@ -4,6 +4,7 @@
   "cc" : null,
   "subject" : null,
   "content" : null,
+  "contentType" : null,
   "attachments" : [ {
     "name" : "basic_text.txt",
     "contentType" : "text/plain",

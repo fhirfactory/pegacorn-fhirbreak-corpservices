@@ -125,6 +125,9 @@ public class PegacornEmailToSMTP {
         } else {
             LOG.warn(".transformPegcornEmailIntoSMTP(): No subject in email, continuing");
         }
+        if (email.getContentType() != null) {
+            exchange.getIn().setHeader("contentType", email.getContentType());
+        }
         if (email.getCc() != null) {
             exchange.getIn().setHeader("cc", email.getCc().stream().collect(Collectors.joining(","))); //TODO may need to add quotation around emails or escape things
         }

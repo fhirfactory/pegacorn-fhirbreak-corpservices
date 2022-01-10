@@ -59,6 +59,7 @@ import net.fhirfactory.pegacorn.util.FHIRContextUtility;
 public class CommunicationToPegacornEmail {
     
     public static final String EMAIL_SUBJECT_EXTENSION_URL = "identifier://net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway/subject";  // will be moved to a more common petasos class
+    public static final String EMAIL_CONTENT_TYPE_EXTENSION_URL = "identifier://net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway/contenttype";  // will be moved to a more common petasos class
 
     private static final Logger LOG = LoggerFactory.getLogger(CommunicationToPegacornEmail.class);
     
@@ -250,6 +251,13 @@ public class CommunicationToPegacornEmail {
                     Extension subjectExtension = payloadComponent.getExtensionByUrl(EMAIL_SUBJECT_EXTENSION_URL);
                     if (subjectExtension != null) {
                         email.setSubject(subjectExtension.getValue().primitiveValue());
+                    }
+                    
+                    // get the content type from the extension
+                    LOG.debug(".transformCommunicationToEmail(): Getting email content type from payload extension");
+                    Extension contentTypeExtension = payloadComponent.getExtensionByUrl(EMAIL_CONTENT_TYPE_EXTENSION_URL);
+                    if (contentTypeExtension != null) {
+                        email.setContentType(contentTypeExtension.getValue().primitiveValue());
                     }
                 }
             }
