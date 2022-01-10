@@ -20,12 +20,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.uhn.fhir.parser.DataFormatException;
-import net.fhirfactory.pegacorn.common.model.generalid.FDNToken;
 import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.EmailDataParcelManifestBuilder;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.transform.beans.CommunicationToPegacornEmail;
 import net.fhirfactory.pegacorn.petasos.model.uow.UoW;
-import net.fhirfactory.pegacorn.petasos.model.uow.UoWIdentifier;
 import net.fhirfactory.pegacorn.petasos.model.uow.UoWPayload;
 import net.fhirfactory.pegacorn.petasos.model.uow.UoWProcessingOutcomeEnum;
 import net.fhirfactory.pegacorn.util.FHIRContextUtility;
@@ -35,7 +33,9 @@ import net.fhirfactory.pegacorn.util.FHIRContextUtility;
 // suitable for resulting in basic startup emails.
 // Note that this actually created a communication resource and then encodes it.
 // this could be altered to directly create the JSON string if this proves
-// too resource intensive.
+// too resource intensive.  It could also be converted to create a PegacornEmail
+// instead of a Communication resource.  A Communication resource is used at the
+// moment as this confirms the entire flow through this module.
 @ApplicationScoped
 public class StartupCommunicationCreator {
     
@@ -53,24 +53,9 @@ public class StartupCommunicationCreator {
     @Inject
     private FHIRContextUtility fhirContextUtility;
     
-    private String fromEmail;
-    
     
     public UoW createStartupEmailCommunication() {
         LOG.debug(".createStartupEmailCommunication(): Entry");
-        UoWPayload uowPayload = new UoWPayload();
-        uowPayload.setPayload(null);
-        DataParcelManifest manifest = emailManifestBuilder.createManifest(Communication.class, "1.0.0");
-        uowPayload.setPayloadManifest(manifest);
-
-        UoW initialUoW = new UoW();
-        initialUoW.getEgressContent().addPayloadElement(uowPayload);
-        initialUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_NOTSTARTED);
-        
-        // use the FDN details from our manifest
-        FDNToken fdnToken = manifest.getContentDescriptor().toFDN().getToken();
-        initialUoW.setTypeID(fdnToken);
-        initialUoW.setInstanceID(new UoWIdentifier(fdnToken));
         
         // email addresses to send to
         List<String> emails = new ArrayList<>();
@@ -82,28 +67,38 @@ public class StartupCommunicationCreator {
         }
         
         // email address to list from
-        fromEmail = System.getenv(ENV_STARTUP_FROM_EMAIL);
+        String fromEmail = System.getenv(ENV_STARTUP_FROM_EMAIL);
         if (fromEmail == null) {
             fromEmail = STARTUP_FROM_EMAIL_DEFAULT;
         }
         
-        // set the payload
-        String payload = null;
-        Communication communication = createCommunicationToEmails(emails);
+        // create the communication resource
+        Communication communication = createCommunicationToEmails(fromEmail, emails);
+        
+        // convert to json
+        UoW initialUoW = null;
+        String jsonPayload = null;
         try {
-            payload = fhirContextUtility.getJsonParser().encodeResourceToString(communication);
+            jsonPayload = fhirContextUtility.getJsonParser().encodeResourceToString(communication);
         } catch (DataFormatException e) {
             LOG.error(".getCommunicationPayload(): Exit, " + FAILURE_CONVERT_TO_JSON, e);
+            initialUoW = new UoW();
             initialUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
             initialUoW.setFailureDescription(FAILURE_CONVERT_TO_JSON + ": " + e.getMessage());
         }
-        uowPayload.setPayload(payload);
+        
+        if (initialUoW == null) {
+            DataParcelManifest manifest = emailManifestBuilder.createManifest(Communication.class, "1.0.0");
+            UoWPayload uowPayload = new UoWPayload(manifest, jsonPayload);
+            
+            initialUoW = new UoW(uowPayload);
+        }
         
         LOG.debug(".createStartupEmailCommunication(): Exit");
         return initialUoW;
     }
     
-    private Communication createCommunicationToEmails(Collection<String> emails) {
+    private Communication createCommunicationToEmails(String fromEmail, Collection<String> emails) {
         Communication communication = new Communication();
         communication.setId("startup_email"); //TODO possibly should make this unique with a datetime part?
         
