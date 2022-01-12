@@ -62,6 +62,7 @@ public class CommunicationToPegacornEmailTest {
         UoWPayload egressPayload = egressPayloadIterator.next();
         
         String emailJson = getResourceString(expectedOutputResourceName);
+        emailJson = emailJson.replaceAll("\n", System.lineSeparator());
         Assertions.assertEquals(emailJson, egressPayload.getPayload(), "Output JSON for PegacornEmail did not match expected JSON");
         
         Assertions.assertTrue(!egressPayloadIterator.hasNext(), "Egress output has more than one payload");        
