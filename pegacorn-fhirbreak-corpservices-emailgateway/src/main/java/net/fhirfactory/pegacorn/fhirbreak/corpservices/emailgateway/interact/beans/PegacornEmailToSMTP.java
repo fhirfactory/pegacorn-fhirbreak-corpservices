@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.URLDataSource;
+import javax.enterprise.context.ApplicationScoped;
 import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.camel.Exchange;
@@ -42,13 +43,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
+import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.PegacornEmail;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.PegacornEmailAttachment;
-import net.fhirfactory.pegacorn.petasos.model.uow.UoW;
-import net.fhirfactory.pegacorn.petasos.model.uow.UoWProcessingOutcomeEnum;
 
 //TODO possibly change name and just allow to support IMAP and POP3 also (as they essentially use the same parameters in camel)
 // Note that the size, hash and creationTime of the email are currently not passed through or used
+@ApplicationScoped
 public class PegacornEmailToSMTP {
     
     private static final Logger LOG = LoggerFactory.getLogger(PegacornEmailToSMTP.class);

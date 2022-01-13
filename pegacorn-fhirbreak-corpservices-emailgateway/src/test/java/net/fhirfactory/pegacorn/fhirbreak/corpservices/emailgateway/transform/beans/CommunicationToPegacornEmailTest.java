@@ -16,9 +16,9 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import ca.uhn.fhir.parser.DataFormatException;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.EmailDataParcelManifestBuilder;
-import net.fhirfactory.pegacorn.petasos.model.uow.UoW;
-import net.fhirfactory.pegacorn.petasos.model.uow.UoWPayload;
-import net.fhirfactory.pegacorn.petasos.model.uow.UoWProcessingOutcomeEnum;
+import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
+import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
+import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
 import net.fhirfactory.pegacorn.util.FHIRContextUtility;
 
 // This test class currently attempts to match exactly output JSON with returned JSON.  This will break if the

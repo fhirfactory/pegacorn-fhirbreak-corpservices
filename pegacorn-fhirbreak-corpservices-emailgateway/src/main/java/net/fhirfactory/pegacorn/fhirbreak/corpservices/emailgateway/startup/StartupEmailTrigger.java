@@ -6,11 +6,14 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.hl7.fhir.r4.model.Communication;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;
-import net.fhirfactory.pegacorn.components.interfaces.topology.WorkshopInterface;
+import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
+import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
+import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.EmailDataParcelManifestBuilder;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.transform.wup.CommunicationToPegacornEmailWUP;
 import net.fhirfactory.pegacorn.petasos.wup.helper.IngresActivityBeginRegistration;
 import net.fhirfactory.pegacorn.workshops.TransformWorkshop;
@@ -31,6 +34,9 @@ public class StartupEmailTrigger extends MOAStandardWUP {
     
     @Inject
     private CommunicationToPegacornEmailWUP emailRoute;
+
+    @Inject
+    private EmailDataParcelManifestBuilder emailManifestBuilder;
     
 
     @Override
@@ -49,6 +55,14 @@ public class StartupEmailTrigger extends MOAStandardWUP {
     @Override
     protected List<DataParcelManifest> specifySubscriptionTopics() {
         return new ArrayList<>();
+    }
+    
+    @Override
+    protected List<DataParcelManifest> declarePublishedTopics() {
+        DataParcelManifest manifest = emailManifestBuilder.createManifest(Communication.class, "1.5.0");
+        List<DataParcelManifest> manifestList = new ArrayList<>();
+        manifestList.add(manifest);
+        return manifestList;
     }
 
     @Override

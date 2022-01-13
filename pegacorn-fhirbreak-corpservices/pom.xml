@@ -6,7 +6,7 @@
     <parent>
         <groupId>net.fhirfactory.pegacorn</groupId>
         <artifactId>pegacorn-fhirbreak</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.5.0-SNAPSHOT</version>
         <relativePath>../../pegacorn-fhirbreak</relativePath>
     </parent>
 
@@ -18,11 +18,11 @@
     </properties>
 
     <modules>
-      <module>../pegacorn-fhirbreak-corpservices-emailgateway</module>
-<!--  <module>../pegacorn-fhirbreak-corpservices-smsgateway</module> -->
-<!--  <module>../pegacorn-fhirbreak-corpservices-ldapgateway</module> -->
-		<module>../pegacorn-fhirbreak-corpservices-ldapsync</module>
-		<module>../pegacorn-fhirbreak-corpservices-ldapscanner</module>
+        <module>../pegacorn-fhirbreak-corpservices-emailgateway</module>
+<!--    <module>../pegacorn-fhirbreak-corpservices-smsgateway</module>
+        <module>../pegacorn-fhirbreak-corpservices-ldapgateway</module>
+        <module>../pegacorn-fhirbreak-corpservices-ldapsync</module>
+        <module>../pegacorn-fhirbreak-corpservices-ldapscanner</module> -->
     </modules>
 
     <name>Pegacorn :: FHIRBreak :: Corporate Services</name>

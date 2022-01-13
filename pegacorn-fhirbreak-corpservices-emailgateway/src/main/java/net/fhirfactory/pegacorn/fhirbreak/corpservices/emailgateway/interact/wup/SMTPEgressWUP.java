@@ -30,8 +30,8 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;
-import net.fhirfactory.pegacorn.components.interfaces.topology.WorkshopInterface;
+import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
+import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.EmailDataParcelManifestBuilder;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.PegacornEmail;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.beans.PegacornEmailToSMTP;
@@ -84,7 +84,15 @@ public class SMTPEgressWUP extends MOAStandardWUP {
 
     @Override
     protected List<DataParcelManifest> specifySubscriptionTopics() {
-        DataParcelManifest manifest = emailManifestBuilder.createManifest(PegacornEmail.class, "1.0.0"); //TODO fix up hardcoded values
+        DataParcelManifest manifest = emailManifestBuilder.createManifest(PegacornEmail.class, "1.5.0"); //TODO fix up hardcoded values
+        List<DataParcelManifest> manifestList = new ArrayList<>();
+        manifestList.add(manifest);
+        return manifestList;
+    }
+    
+    @Override
+    protected List<DataParcelManifest> declarePublishedTopics() {
+        DataParcelManifest manifest = emailManifestBuilder.createManifest(String.class, "1.5.0"); //TODO fix up hardcoded values
         List<DataParcelManifest> manifestList = new ArrayList<>();
         manifestList.add(manifest);
         return manifestList;

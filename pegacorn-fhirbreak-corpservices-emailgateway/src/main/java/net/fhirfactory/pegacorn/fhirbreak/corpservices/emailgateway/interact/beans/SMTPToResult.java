@@ -21,30 +21,40 @@
  */
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.beans;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
 import org.apache.camel.Exchange;
-import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;
-import net.fhirfactory.pegacorn.petasos.model.configuration.PetasosPropertyConstants;
-import net.fhirfactory.pegacorn.petasos.model.uow.UoW;
-import net.fhirfactory.pegacorn.petasos.model.uow.UoWPayload;
-import net.fhirfactory.pegacorn.petasos.model.uow.UoWProcessingOutcomeEnum;
+import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
+import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
+import net.fhirfactory.pegacorn.core.model.petasos.task.PetasosFulfillmentTask;
+import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
+import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
+import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
+import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.EmailDataParcelManifestBuilder;
 
+@ApplicationScoped
 public class SMTPToResult {
 
     private static final Logger LOG = LoggerFactory.getLogger(SMTPToResult.class);
     
     private static final String CAMEL_MAIL_MESSAGE_ID_HEADER = "CamelMailMessageId";
+    
+    @Inject
+    private EmailDataParcelManifestBuilder emailManifestBuilder;
+    
 
     // get the results of the SMTP communication and set the UoW status
     public UoW toResult(Exchange exchange) {
         LOG.debug("toResult(): Entry");        
         
         // get uow from exchange
-        UoW uow = (UoW) exchange.getProperty(PetasosPropertyConstants.WUP_CURRENT_UOW_EXCHANGE_PROPERTY_NAME);
+        PetasosFulfillmentTask fulfillmentTask = exchange.getProperty(PetasosPropertyConstants.WUP_PETASOS_FULFILLMENT_TASK_EXCHANGE_PROPERTY, PetasosFulfillmentTask.class);
+        UoW uow = fulfillmentTask.getTaskWorkItem();
         if (uow == null) {
             LOG.error(".toResult(): Exit, current UoW from exchange is null!");
             return(null);
@@ -93,7 +103,7 @@ public class SMTPToResult {
         smtpResultPayload.setPayload(egressPayloadStr);
         
         LOG.trace(".toResult(): Setting egress payload manifest");
-        DataParcelManifest manifest = SerializationUtils.clone(uow.getIngresContent().getPayloadManifest());
+        DataParcelManifest manifest = emailManifestBuilder.createManifest(String.class, "1.5.0");
         manifest.getContentDescriptor().setDataParcelDiscriminatorType("Response");
         manifest.getContentDescriptor().setDataParcelDiscriminatorValue("ACK");
         //TODO check if a resource type should be set here

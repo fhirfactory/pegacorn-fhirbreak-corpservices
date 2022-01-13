@@ -31,9 +31,10 @@ import org.hl7.fhir.r4.model.Communication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.fhirfactory.pegacorn.components.dataparcel.DataParcelManifest;
-import net.fhirfactory.pegacorn.components.interfaces.topology.WorkshopInterface;
+import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
+import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.EmailDataParcelManifestBuilder;
+import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.PegacornEmail;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.transform.beans.CommunicationToPegacornEmail;
 import net.fhirfactory.pegacorn.workshops.TransformWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.MOAStandardWUP;
@@ -64,7 +65,15 @@ public class CommunicationToPegacornEmailWUP extends MOAStandardWUP {
 
     @Override
     protected List<DataParcelManifest> specifySubscriptionTopics() {
-        DataParcelManifest manifest = emailManifestBuilder.createManifest(Communication.class, "1.0.0");
+        DataParcelManifest manifest = emailManifestBuilder.createManifest(Communication.class, "1.5.0");
+        List<DataParcelManifest> manifestList = new ArrayList<>();
+        manifestList.add(manifest);
+        return manifestList;
+    }
+    
+    @Override
+    protected List<DataParcelManifest> declarePublishedTopics() {
+    	DataParcelManifest manifest = emailManifestBuilder.createManifest(PegacornEmail.class, "1.5.0");
         List<DataParcelManifest> manifestList = new ArrayList<>();
         manifestList.add(manifest);
         return manifestList;
