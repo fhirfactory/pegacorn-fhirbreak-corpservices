@@ -71,4 +71,9 @@ public class PegacornEmailAttachment {
     public void setCreationTime(String creationTime) {
         this.creationTime = creationTime;
     }
+
+	@Override
+	public String toString() {
+		return "PegacornEmailAttachment [name=" + name + ", contentType=" + contentType + ", url=" + url + "]";
+	}
 }

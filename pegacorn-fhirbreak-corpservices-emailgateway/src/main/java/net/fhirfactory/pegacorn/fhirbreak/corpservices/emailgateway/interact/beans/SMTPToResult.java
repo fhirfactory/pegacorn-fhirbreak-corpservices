@@ -64,6 +64,9 @@ public class SMTPToResult {
             return(uow);
         }
         
+        // get our email payload string for logging messages
+        String emailStr = exchange.getProperty(PegacornEmailToSMTP.EMAIL_CORRELATION_STRING_EXCHANGE_PROPERTY_NAME, String.class);
+        
         if (exchange.isFailed()) {
             LOG.trace(".toResult(): Failure recorded on exchange, setting outcome to failure");
             uow.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
@@ -76,13 +79,14 @@ public class SMTPToResult {
                 failureMessage = "Non-exception failure after SMTP send";
             }
             uow.setFailureDescription(failureMessage);
+            LOG.info(".toResult(): Failure for sending email->{} failureMessage->{}", emailStr, failureMessage);
         } else {
             LOG.trace(".toResult(): No failure recorded on exchange, setting outcome to success");
             uow.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_SUCCESS);
         }
 
         // set the output to the mail Message-ID if present
-        String egressPayloadStr = exchange.getIn().getHeader(CAMEL_MAIL_MESSAGE_ID_HEADER).toString();
+        String egressPayloadStr = (String) exchange.getIn().getHeader(CAMEL_MAIL_MESSAGE_ID_HEADER);
         if (StringUtils.isEmpty(egressPayloadStr)) {
             // use the body instead
             Object body = exchange.getIn().getBody(); 
@@ -91,10 +95,10 @@ public class SMTPToResult {
                 egressPayloadStr = body.toString();
             } else {
                 // just log and ignore - nothing should be using the output anyway
-                LOG.debug(".toResult(): Could not get Message-ID or email body for result output");
+                LOG.warn(".toResult(): email->{}: Could not get Message-ID or email body for result output", emailStr);
             }
         } else {
-            LOG.trace(".toResult(): mailMessageId->{}", egressPayloadStr);
+            LOG.info(".toResult(): email->{}, mailMessageId->{}", emailStr, egressPayloadStr);
         }
         
         // add our output body from the SMTP id to the payload

@@ -50,8 +50,14 @@ import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.Pegac
 
 //TODO possibly change name and just allow to support IMAP and POP3 also (as they essentially use the same parameters in camel)
 // Note that the size, hash and creationTime of the email are currently not passed through or used
+//TODO fix setting failures on the incomingUoW.  It seems that these are not saved.  This will either need a seperate bean
+//     to validate before this bean or will need some way to save out updates to the UoW to the petasos fulfillment task
 @ApplicationScoped
 public class PegacornEmailToSMTP {
+	
+	// used by SMTPToResult instead for logging
+	//TODO possibly better to move earlier in the process or replace with some other type of correlation id
+    public static final String EMAIL_CORRELATION_STRING_EXCHANGE_PROPERTY_NAME = "EmailCorrelationString";
     
     private static final Logger LOG = LoggerFactory.getLogger(PegacornEmailToSMTP.class);
 
@@ -104,6 +110,9 @@ public class PegacornEmailToSMTP {
             return null;
         }
         
+        // add our email string details to the exchange for SMTPToResult to use
+        exchange.setProperty(EMAIL_CORRELATION_STRING_EXCHANGE_PROPERTY_NAME, email.toString());
+        
         // add to header fields
         LOG.trace(".transformPegcornEmailIntoSMTP(): Begin setting header fields");
         if (email.getFrom() != null) {
@@ -111,7 +120,7 @@ public class PegacornEmailToSMTP {
         } else {
             incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
             incomingUoW.setFailureDescription("no From address for email");
-            LOG.warn(".transformPegcornEmailIntoSMTP(): Exit, no From address for email");
+            LOG.warn(".transformPegcornEmailIntoSMTP(): Exit, no From address for email->{}", email);
             return null;
         }
         if (email.getTo() != null && !email.getTo().isEmpty()) {
@@ -119,13 +128,13 @@ public class PegacornEmailToSMTP {
         } else {
             incomingUoW.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
             incomingUoW.setFailureDescription("no To addresses for email");
-            LOG.warn(".transformPegcornEmailIntoSMTP(): Exit, no To addresses for email");
+            LOG.warn(".transformPegcornEmailIntoSMTP(): Exit, no To addresses for email->{}", email);
             return null;
         }
         if (email.getSubject() != null) {
             exchange.getIn().setHeader("subject", email.getSubject());
         } else {
-            LOG.warn(".transformPegcornEmailIntoSMTP(): No subject in email, continuing");
+            LOG.warn(".transformPegcornEmailIntoSMTP(): No subject in email, continuing: email->{}", email);
         }
         if (email.getContentType() != null) {
             exchange.getIn().setHeader("contentType", email.getContentType());
@@ -150,7 +159,7 @@ public class PegacornEmailToSMTP {
                 if (attachment.getUrl() == null) {
                     // ignore for now
                     //TODO check if this should count as a failure
-                    LOG.warn(".transformPegcornEmailIntoSMTP(): Ignored attachment {} ({}): empty data and url fields");
+                    LOG.warn(".transformPegcornEmailIntoSMTP(): Ignored attachment: empty data and url fields: attachment->{}", attachment);
                     continue;
                 }
                 URL url;
