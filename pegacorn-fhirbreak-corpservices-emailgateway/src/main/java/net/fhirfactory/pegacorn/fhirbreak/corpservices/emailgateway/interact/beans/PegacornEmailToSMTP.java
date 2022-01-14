@@ -50,6 +50,8 @@ import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.Pegac
 
 //TODO possibly change name and just allow to support IMAP and POP3 also (as they essentially use the same parameters in camel)
 // Note that the size, hash and creationTime of the email are currently not passed through or used
+//TODO fix setting failures on the incomingUoW.  It seems that these are not saved.  This will either need a seperate bean
+//     to validate before this bean or will need some way to save out updates to the UoW to the petasos fulfillment task
 @ApplicationScoped
 public class PegacornEmailToSMTP {
 	
