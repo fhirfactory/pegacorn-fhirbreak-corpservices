@@ -78,4 +78,10 @@ public class PegacornEmail {
     public void setAttachments(List<PegacornEmailAttachment> attachments) {
         this.attachments = attachments;
     }
+    
+	@Override
+	public String toString() {
+		return "PegacornEmail [from=" + from + ", to=" + to + ", cc=" + cc + ", subject=" + subject + ", attachments="
+				+ attachments + "]";
+	}
 }

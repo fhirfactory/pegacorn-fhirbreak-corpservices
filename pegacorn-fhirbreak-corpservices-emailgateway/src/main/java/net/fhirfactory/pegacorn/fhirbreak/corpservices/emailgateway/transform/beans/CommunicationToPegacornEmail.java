@@ -263,6 +263,12 @@ public class CommunicationToPegacornEmail {
             }
         }
         
+        // log at info level
+        //TODO find out what limits there should be in what is logged
+        //TODO add some sort of correlation id for tracking log messages to this this.
+        //     note that the Camel MDC values such as message.id do not seem useful for this
+        LOG.info(".transformCommunicationToEmail(): Transformed communication into email->{}", email);
+        
         // convert pegacorn email to JSON string
         String egressPayloadString = null;
         try {
