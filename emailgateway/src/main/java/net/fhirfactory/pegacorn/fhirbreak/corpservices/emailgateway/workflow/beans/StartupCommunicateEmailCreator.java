@@ -6,9 +6,16 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.apache.camel.Exchange;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelTypeDescriptor;
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelDirectionEnum;
@@ -20,23 +27,10 @@ import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
 import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
 import net.fhirfactory.pegacorn.internals.communicate.entities.message.CommunicateEmailMessage;
 import net.fhirfactory.pegacorn.internals.communicate.entities.message.factories.CommunicateMessageTopicFactory;
-import org.apache.camel.Exchange;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.EmailDataParcelManifestBuilder;
-import net.fhirfactory.pegacorn.util.FHIRContextUtility;
 
 
-// Creates a unit of work with a JSON encoding of a communication resource
-// suitable for resulting in basic startup emails.
-// Note that this actually created a communication resource and then encodes it.
-// this could be altered to directly create the JSON string if this proves
-// too resource intensive.  It could also be converted to create a PegacornEmail
-// instead of a Communication resource.  A Communication resource is used at the
-// moment as this confirms the entire flow through this module.
+// Creates a Unit of Work with a JSON encoding of a CommunicateEmailMessage
+// to indicate startup based off environment variables
 @ApplicationScoped
 public class StartupCommunicateEmailCreator {
     private static final Logger LOG = LoggerFactory.getLogger(StartupCommunicateEmailCreator.class);
@@ -49,8 +43,6 @@ public class StartupCommunicateEmailCreator {
     
     protected static final String FAILURE_CONVERT_TO_JSON = "Could not convert created started email Communication resource to JSON";
 
-    @Inject
-    private EmailDataParcelManifestBuilder emailManifestBuilder;
 
     @Inject
     private CommunicateMessageTopicFactory communicateMessageTopicFactory;
@@ -88,19 +80,21 @@ public class StartupCommunicateEmailCreator {
 
         emailMessage.setFrom(fromEmail);
         emailMessage.getTo().addAll(emails);
+        emailMessage.setSubject("Pegacorn Email Gateway Startup");
         emailMessage.setContent("This email shows that the pegacorn email subsystem is working and able to send email");
 
         //
         // Create the UoW
         //
 
-        UoW uow = new UoW();
+        UoW uow = null;
         UoWPayload payload = new UoWPayload();
         String payloadString = null;
         try{
             payloadString = getJSONMapper().writeValueAsString(emailMessage);
         } catch(Exception ex){
             String errorMessage = ExceptionUtils.getMessage(ex);
+            uow = new UoW();
             uow.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED);
             uow.setFailureDescription(errorMessage);
             getLogger().warn(".createStartupEmailCommunication(): Could not convert message to JSON, errorMessage->{}", errorMessage);
@@ -117,10 +111,11 @@ public class StartupCommunicateEmailCreator {
             emailManifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_POSITIVE);
             emailManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_OUTBOUND_DATA_PARCEL);
             emailManifest.setInterSubsystemDistributable(true);
-            payload.setPayload(payloadString);
             payload.setPayloadManifest(emailManifest);
-            uow.setIngresContent(payload);
+            payload.setPayload(payloadString);
+            uow = new UoW(payload);
             uow.getEgressContent().addPayloadElement(payload);
+            uow.setProcessingOutcome(UoWProcessingOutcomeEnum.UOW_OUTCOME_SUCCESS);
         }
         
         LOG.debug(".createStartupEmailCommunication(): Exit, uow->{}", uow);

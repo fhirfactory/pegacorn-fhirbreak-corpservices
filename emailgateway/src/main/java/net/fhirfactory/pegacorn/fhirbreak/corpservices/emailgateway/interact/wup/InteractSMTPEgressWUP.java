@@ -21,6 +21,15 @@
  */
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.wup;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelTypeDescriptor;
@@ -28,19 +37,13 @@ import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelDirect
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelNormalisationStatusEnum;
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.DataParcelValidationStatusEnum;
 import net.fhirfactory.pegacorn.core.model.dataparcel.valuesets.PolicyEnforcementPointApprovalStatusEnum;
-import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.EmailDataParcelManifestBuilder;
+import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.beans.IsSuccessfulUoW;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.beans.PegacornEmailToSMTP;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.beans.SMTPToResult;
+import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.beans.StringPayloadExtractor;
 import net.fhirfactory.pegacorn.internals.communicate.entities.message.factories.CommunicateMessageTopicFactory;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.MOAStandardWUP;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
 
 @ApplicationScoped
 public class InteractSMTPEgressWUP extends MOAStandardWUP {
@@ -72,9 +75,6 @@ public class InteractSMTPEgressWUP extends MOAStandardWUP {
     
     @Inject
     private InteractWorkshop workshop;
-    
-    @Inject
-    private EmailDataParcelManifestBuilder emailManifestBuilder;
 
     @Inject
     private CommunicateMessageTopicFactory communicateMessageTopicFactory;
@@ -136,11 +136,11 @@ public class InteractSMTPEgressWUP extends MOAStandardWUP {
         fromIncludingPetasosServices(ingresFeed())
             .routeId(getNameSet().getRouteCoreWUP())
             .bean(PegacornEmailToSMTP.class)
-            .choice()
-                .when().simple("${body} != null")
+            .choice().when(new IsSuccessfulUoW())
+                .bean(StringPayloadExtractor.class)
                 .to(SMTP_CAMEL_ENDPOINT)
+                .bean(SMTPToResult.class)
             .end()
-            .bean(SMTPToResult.class)
             .to(egressFeed());
     }
 }

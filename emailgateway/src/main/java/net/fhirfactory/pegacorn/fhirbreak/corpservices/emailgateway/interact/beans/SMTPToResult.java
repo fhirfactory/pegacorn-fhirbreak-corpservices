@@ -21,21 +21,20 @@
  */
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.beans;
 
-import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
-import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
-import net.fhirfactory.pegacorn.core.model.petasos.task.PetasosFulfillmentTask;
-import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
-import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
-import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
-import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.EmailDataParcelManifestBuilder;
+import javax.enterprise.context.ApplicationScoped;
+
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import net.fhirfactory.pegacorn.core.constants.petasos.PetasosPropertyConstants;
+import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
+import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
+import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
+import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
+import net.fhirfactory.pegacorn.petasos.core.tasks.accessors.PetasosFulfillmentTaskSharedInstance;
 
 @ApplicationScoped
 public class SMTPToResult {
@@ -44,8 +43,6 @@ public class SMTPToResult {
     
     private static final String CAMEL_MAIL_MESSAGE_ID_HEADER = "CamelMailMessageId";
     
-    @Inject
-    private EmailDataParcelManifestBuilder emailManifestBuilder;
     
 
     // get the results of the SMTP communication and set the UoW status
@@ -53,14 +50,15 @@ public class SMTPToResult {
         LOG.debug("toResult(): Entry");        
         
         // get uow from exchange
-        PetasosFulfillmentTask fulfillmentTask = exchange.getProperty(PetasosPropertyConstants.WUP_PETASOS_FULFILLMENT_TASK_EXCHANGE_PROPERTY, PetasosFulfillmentTask.class);
+        PetasosFulfillmentTaskSharedInstance fulfillmentTask = exchange.getProperty(PetasosPropertyConstants.WUP_PETASOS_FULFILLMENT_TASK_EXCHANGE_PROPERTY, PetasosFulfillmentTaskSharedInstance.class);
         UoW uow = SerializationUtils.clone(fulfillmentTask.getTaskWorkItem());
         if (uow == null) {
             LOG.error(".toResult(): Exit, current UoW from exchange is null!");
             return(null);
         }
-        if(uow.getProcessingOutcome().equals(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED)){
-            LOG.warn(".transformCommunicationToEmail(): Exit, UoW recorded on exchange has already failed!");
+        if(uow.getProcessingOutcome().equals(UoWProcessingOutcomeEnum.UOW_OUTCOME_FAILED)) {
+            //TODO add extra information in this case - probably from below
+            LOG.error(".transformCommunicationToEmail(): Exit, UoW recorded on exchange has already failed!  This should never happen");
             return(uow);
         }
         
