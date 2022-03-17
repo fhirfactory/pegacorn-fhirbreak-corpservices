@@ -112,8 +112,8 @@ public class InteractSMTPEgressWUP extends MOAStandardWUP {
         emailSubscriptionManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
         emailSubscriptionManifest.setSourceSystem(DataParcelManifest.WILDCARD_CHARACTER);
         emailSubscriptionManifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_ANY);
-        emailSubscriptionManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_WORKFLOW_OUTPUT);
-        emailSubscriptionManifest.setInterSubsystemDistributable(true);
+        emailSubscriptionManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_OUTBOUND_DATA_PARCEL);
+        emailSubscriptionManifest.setInterSubsystemDistributable(false);
 
         manifestList.add(emailSubscriptionManifest);
         
