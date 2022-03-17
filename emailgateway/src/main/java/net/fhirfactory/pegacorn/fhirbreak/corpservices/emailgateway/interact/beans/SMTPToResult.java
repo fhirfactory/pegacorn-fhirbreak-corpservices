@@ -105,7 +105,7 @@ public class SMTPToResult {
         smtpResultPayload.setPayload(egressPayloadStr);
         
         LOG.trace(".toResult(): Setting egress payload manifest");
-        DataParcelManifest manifest = uow.getIngresContent().getPayloadManifest();
+        DataParcelManifest manifest = SerializationUtils.clone(uow.getIngresContent().getPayloadManifest());
         manifest.getContentDescriptor().setDataParcelDiscriminatorType("Response");
         manifest.getContentDescriptor().setDataParcelDiscriminatorValue("ACK");
         //TODO check if a resource type should be set here

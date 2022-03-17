@@ -103,7 +103,20 @@ public class InteractSMTPEgressWUP extends MOAStandardWUP {
 
         List<DataParcelManifest> manifestList = new ArrayList<>();
         manifestList.add(emailSubscriptionManifest);
+        
+        emailSubscriptionManifest = new DataParcelManifest();
+        emailTypeDescriptor = communicateMessageTopicFactory.createEmailTypeDescriptor();
+        emailSubscriptionManifest.setContentDescriptor(emailTypeDescriptor);
+        emailSubscriptionManifest.setSourceProcessingPlantParticipantName(DataParcelManifest.WILDCARD_CHARACTER);
+        emailSubscriptionManifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
+        emailSubscriptionManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
+        emailSubscriptionManifest.setSourceSystem(DataParcelManifest.WILDCARD_CHARACTER);
+        emailSubscriptionManifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_ANY);
+        emailSubscriptionManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_WORKFLOW_OUTPUT);
+        emailSubscriptionManifest.setInterSubsystemDistributable(true);
 
+        manifestList.add(emailSubscriptionManifest);
+        
         return manifestList;
     }
     
