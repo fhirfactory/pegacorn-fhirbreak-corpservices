@@ -1,7 +1,7 @@
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.workflow;
 
 import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
-import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
+import net.fhirfactory.pegacorn.core.model.petasos.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.workflow.beans.StartupCommunicateEmailCreator;
 import net.fhirfactory.pegacorn.petasos.wup.helper.IngresActivityBeginRegistration;
 import net.fhirfactory.pegacorn.workshops.WorkflowWorkshop;
