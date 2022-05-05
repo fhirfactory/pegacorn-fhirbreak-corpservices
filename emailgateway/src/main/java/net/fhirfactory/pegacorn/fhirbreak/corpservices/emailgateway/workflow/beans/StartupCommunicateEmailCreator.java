@@ -40,6 +40,8 @@ public class StartupCommunicateEmailCreator {
     public static final String ENV_STARTUP_FROM_EMAIL = "MAIL_STARTUP_FROM";
     public static final String ENV_STARTUP_TO_EMAIL = "MAIL_STARTUP_TO";
     public static final String STARTUP_FROM_EMAIL_DEFAULT = "noreply@pegacorn";
+    public static final String ENV_STARTUP_SUBJECT_EMAIL = "MAIL_STARTUP_SUBJECT";
+    public static final String ENV_SITENAME = "MY_POD_NAMESPACE";
     
     protected static final String FAILURE_CONVERT_TO_JSON = "Could not convert created started email Communication resource to JSON";
 
@@ -80,7 +82,7 @@ public class StartupCommunicateEmailCreator {
 
         emailMessage.setFrom(fromEmail);
         emailMessage.getTo().addAll(emails);
-        emailMessage.setSubject("Pegacorn Email Gateway Startup");
+        emailMessage.setSubject(getSubject());
         emailMessage.setContent("This email shows that the pegacorn email subsystem is working and able to send email");
 
         //
@@ -106,7 +108,7 @@ public class StartupCommunicateEmailCreator {
             emailManifest.setContentDescriptor(emailTypeDescriptor);
             emailManifest.setSourceProcessingPlantParticipantName(DataParcelManifest.WILDCARD_CHARACTER);
             emailManifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
-            emailManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_TRUE);
+            emailManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_FALSE);
             emailManifest.setSourceSystem(DataParcelManifest.WILDCARD_CHARACTER);
             emailManifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_POSITIVE);
             emailManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_OUTBOUND_DATA_PARCEL);
@@ -120,6 +122,16 @@ public class StartupCommunicateEmailCreator {
         
         LOG.debug(".createStartupEmailCommunication(): Exit, uow->{}", uow);
         return (uow);
+    }
+    
+    private String getSubject() {
+        String subject = "Pegacorn Email Gateway Startup";
+        if (!StringUtils.isEmpty(System.getenv(ENV_STARTUP_SUBJECT_EMAIL))) {
+            subject = System.getenv(ENV_STARTUP_SUBJECT_EMAIL);
+        } else if (!StringUtils.isEmpty(System.getenv(ENV_SITENAME))) {
+            subject = "(" + System.getenv(ENV_SITENAME) + ") " + subject;
+        }
+        return subject;
     }
 
     //
