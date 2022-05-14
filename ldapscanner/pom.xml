@@ -7,14 +7,14 @@
     <!-- Based on https://github.com/wildfly-extras/wildfly-camel-examples/blob/master/camel-jms/pom.xml -->
 
     <parent>
-        <groupId>net.fhirfactory.pegacorn</groupId>
-        <artifactId>pegacorn-fhirbreak-corpservices</artifactId>
-        <version>1.5.0-SNAPSHOT</version>
+        <groupId>net.fhirfactory.dricats</groupId>
+        <artifactId>dricats-fhirbreak-corpservices</artifactId>
+        <version>1.6.0-SNAPSHOT</version>
     </parent>
 
 
-    <artifactId>pegacorn-fhirbreak-corpservices-ldapscanner</artifactId>
-    <name>Pegacorn :: FHIRBreak :: LDAP Scanner</name>
+    <artifactId>dricats-fhirbreak-corpservices-ldapscanner</artifactId>
+    <name>DRICATS :: FHIRBreak :: LDAP Scanner</name>
     <description>Corpservices - LDAP Scanner</description>
     <packaging>jar</packaging>
 
@@ -66,23 +66,23 @@
         </dependency>
         
          <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-buildingblocks-datamodels-fhir</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-buildingblocks-datamodels-fhir</artifactId>
             <version>${version-pegacorn}</version>
             <scope>compile</scope>
         </dependency>
         
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-buildingblocks-datamodels-ldap</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-buildingblocks-datamodels-ldap</artifactId>
             <type>jar</type>
             <scope>compile</scope>
             <version>${project.version}</version>
         </dependency>
         
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-buildingblocks-workunitprocessors</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-buildingblocks-workunitprocessors</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -127,31 +127,31 @@
         </dependency>
                <!-- Pegacorn Common Code -->
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-platform-commoncode</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-platform-commoncode</artifactId>
             <type>jar</type>
             <scope>compile</scope>
             <version>${project.version}</version>
         </dependency>
         <!-- Pegacorn::Petasos -->
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-platform-petasos-model</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-platform-petasos-model</artifactId>
             <type>jar</type>
             <scope>compile</scope>
             <version>${project.version}</version>
         </dependency>
                
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-platform-petasos-datasets</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-platform-petasos-datasets</artifactId>
             <type>jar</type>
             <scope>compile</scope>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-platform-petasos-core</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-platform-petasos-core</artifactId>
             <type>jar</type>
             <scope>compile</scope>
             <version>${project.version}</version>
@@ -159,8 +159,8 @@
 
         <!-- Pegacorn::BuildingBlocks -->
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-buildingblocks-processingplant</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-buildingblocks-processingplant</artifactId>
             <version>${version-pegacorn}</version>
             <type>jar</type>
             <scope>compile</scope>
@@ -172,8 +172,8 @@
             <version>${version-org.json}</version>
         </dependency>
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-buildingblocks-processingplant</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-buildingblocks-processingplant</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
@@ -247,15 +247,15 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-buildingblocks-edge-messaging</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-buildingblocks-edge-messaging</artifactId>
            <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-buildingblocks-edge-model</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-buildingblocks-edge-model</artifactId>
            <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
@@ -307,7 +307,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        net.fhirfactory.pegacorn.platform.edge.messaging.PegacornIPCGossipRouter
+                                        net.fhirfactory.dricats.platform.edge.messaging.PegacornIPCGossipRouter
                                     </mainClass>
                                 </manifest>
                             </archive>

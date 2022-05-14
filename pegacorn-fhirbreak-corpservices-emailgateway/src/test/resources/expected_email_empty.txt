@@ -1,9 +1,0 @@
-{
-  "from" : null,
-  "to" : [ ],
-  "cc" : null,
-  "subject" : null,
-  "content" : null,
-  "contentType" : null,
-  "attachments" : [ ]
-}

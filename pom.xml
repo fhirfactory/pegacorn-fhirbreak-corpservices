@@ -4,13 +4,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>net.fhirfactory.pegacorn</groupId>
-        <artifactId>pegacorn-fhirbreak</artifactId>
-        <version>1.5.0-SNAPSHOT</version>
+        <groupId>net.fhirfactory.dricats</groupId>
+        <artifactId>dricats-fhirbreak</artifactId>
+        <version>1.6.0-SNAPSHOT</version>
         <relativePath>../pegacorn-fhirbreak</relativePath>
     </parent>
 
-    <artifactId>pegacorn-fhirbreak-corpservices</artifactId>
+    <artifactId>dricats-fhirbreak-corpservices</artifactId>
     <packaging>pom</packaging>
 
     <properties>
@@ -25,5 +25,5 @@
         <module>ldapscanner</module> -->
     </modules>
 
-    <name>Pegacorn :: FHIRBreak :: Corporate Services</name>
+    <name>DRICATS :: FHIRBreak :: Corporate Services</name>
 </project>

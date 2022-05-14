@@ -5,15 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>net.fhirfactory.pegacorn</groupId>
-        <artifactId>pegacorn-fhirbreak-corpservices</artifactId>
-        <version>1.5.0-SNAPSHOT</version>
+        <groupId>net.fhirfactory.dricats</groupId>
+        <artifactId>dricats-fhirbreak-corpservices</artifactId>
+        <version>1.6.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>pegacorn-fhirbreak-corpservices-ldapgateway</artifactId>
+    <artifactId>dricats-fhirbreak-corpservices-ldapgateway</artifactId>
     <packaging>jar</packaging>
 
-    <name>Pegacorn :: FHIRBreak :: Corporate Services :: LDAP Gateway</name>
+    <name>DRICATS :: FHIRBreak :: Corporate Services :: LDAP Gateway</name>
 
     <url>http://pegacorn.fhirfactory.net</url>
 
@@ -88,71 +88,71 @@
         <!-- * Pegacorn Components      * -->
         <!-- **************************** -->
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-platform-petasos-model</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-platform-petasos-model</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-platform-petasos-topology</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-platform-petasos-topology</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-platform-petasos-datasets</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-platform-petasos-datasets</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-platform-petasos-core</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-platform-petasos-core</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-platform-petasos-ipc</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-platform-petasos-ipc</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-deployment-properties</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-deployment-properties</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-deployment-datasets</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-deployment-datasets</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-deployment-topology</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-deployment-topology</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-buildingblocks-edge</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-buildingblocks-edge</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>net.fhirfactory.pegacorn</groupId>
-            <artifactId>pegacorn-buildingblocks-processingplant</artifactId>
+            <groupId>net.fhirfactory.dricats</groupId>
+            <artifactId>dricats-buildingblocks-processingplant</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <scope>compile</scope>
