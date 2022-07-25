@@ -112,7 +112,7 @@ public class StartupCommunicateEmailCreator {
             emailManifest.setSourceSystem(DataParcelManifest.WILDCARD_CHARACTER);
             emailManifest.setEnforcementPointApprovalStatus(PolicyEnforcementPointApprovalStatusEnum.POLICY_ENFORCEMENT_POINT_APPROVAL_POSITIVE);
             emailManifest.setDataParcelFlowDirection(DataParcelDirectionEnum.INFORMATION_FLOW_OUTBOUND_DATA_PARCEL);
-            emailManifest.setInterSubsystemDistributable(true);
+            emailManifest.setInterSubsystemDistributable(false);
             payload.setPayloadManifest(emailManifest);
             payload.setPayload(payloadString);
             uow = new UoW(payload);
