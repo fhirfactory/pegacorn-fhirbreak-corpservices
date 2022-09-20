@@ -67,14 +67,14 @@
         
          <dependency>
             <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-datamodels-fhir</artifactId>
+            <artifactId>dricats-datamodels-fhir</artifactId>
             <version>${version-pegacorn}</version>
             <scope>compile</scope>
         </dependency>
         
         <dependency>
             <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-datamodels-ldap</artifactId>
+            <artifactId>dricats-datamodels-ldap</artifactId>
             <type>jar</type>
             <scope>compile</scope>
             <version>${project.version}</version>
@@ -245,20 +245,6 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-edge-messaging</artifactId>
-           <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.fhirfactory.dricats</groupId>
-            <artifactId>dricats-buildingblocks-edge-model</artifactId>
-           <version>${project.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
         </dependency>
         
         <dependency>

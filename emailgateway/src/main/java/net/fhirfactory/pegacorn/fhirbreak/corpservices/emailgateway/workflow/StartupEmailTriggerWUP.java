@@ -1,11 +1,11 @@
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.workflow;
 
-import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
-import net.fhirfactory.pegacorn.core.model.petasos.dataparcel.DataParcelManifest;
+import net.fhirfactory.dricats.interfaces.topology.WorkshopInterface;
+import net.fhirfactory.dricats.model.petasos.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.workflow.beans.StartupCommunicateEmailCreator;
 import net.fhirfactory.pegacorn.petasos.wup.helper.IngresActivityBeginRegistration;
-import net.fhirfactory.pegacorn.workshops.WorkflowWorkshop;
-import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.MOAStandardWUP;
+import net.fhirfactory.dricats.petasos.participant.workshops.WorkflowWorkshop;
+import net.fhirfactory.dricats.petasos.participant.wup.messagebased.MOAStandardWUP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,26 +1,10 @@
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.transform.beans;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Iterator;
-
 import net.fhirfactory.pegacorn.internals.communicate.entities.message.factories.CommunicationToPegacornEmailFactory;
-import org.hl7.fhir.r4.model.Communication;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
-import ca.uhn.fhir.parser.DataFormatException;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.common.EmailDataParcelManifestBuilder;
-import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
-import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWPayload;
-import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
-import net.fhirfactory.pegacorn.util.FHIRContextUtility;
 
 // This test class currently attempts to match exactly output JSON with returned JSON.  This will break if the
 // formatting of this JSON changes and will require this class being updated in this case

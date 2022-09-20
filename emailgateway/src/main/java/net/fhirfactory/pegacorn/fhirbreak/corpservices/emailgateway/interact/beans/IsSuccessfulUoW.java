@@ -3,8 +3,8 @@ package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.interact.be
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 
-import net.fhirfactory.pegacorn.core.model.petasos.uow.UoW;
-import net.fhirfactory.pegacorn.core.model.petasos.uow.UoWProcessingOutcomeEnum;
+import net.fhirfactory.dricats.model.petasos.uow.UoW;
+import net.fhirfactory.dricats.model.petasos.uow.UoWProcessingOutcomeEnum;
 
 public class IsSuccessfulUoW implements Predicate {
 

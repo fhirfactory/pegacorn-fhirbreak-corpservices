@@ -11,7 +11,7 @@ import net.fhirfactory.pegacorn.components.interfaces.topology.WorkshopInterface
 import net.fhirfactory.pegacorn.deployment.topology.model.endpoints.interact.StandardInteractClientTopologyEndpointPort;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.ldapscanner.workshops.interact.beans.LdapEntryToUoW;
 import net.fhirfactory.pegacorn.fhirbreak.corpservices.ldapscanner.workshops.interact.beans.ReadLdapEntries;
-import net.fhirfactory.pegacorn.petasos.core.moa.wup.TriggerBasedWUPEndpoint;
+import net.fhirfactory.pegacorn.petasos.tasking.moa.wup.TriggerBasedWUPEndpoint;
 import net.fhirfactory.pegacorn.petasos.wup.helper.IngresActivityBeginRegistration;
 import net.fhirfactory.pegacorn.workshops.InteractWorkshop;
 import net.fhirfactory.pegacorn.wups.archetypes.petasosenabled.messageprocessingbased.InteractIngresAPIClientGatewayWUP;
