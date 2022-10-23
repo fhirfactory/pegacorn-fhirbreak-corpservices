@@ -42,7 +42,7 @@
  */
 package net.fhirfactory.pegacorn.fhirbreak.corpservices.emailgateway.gatekeeper.wup;
 
-import net.fhirfactory.pegacorn.core.constants.systemwide.PegacornReferenceProperties;
+import net.fhirfactory.pegacorn.core.constants.systemwide.DRICaTSReferenceProperties;
 import net.fhirfactory.pegacorn.core.interfaces.topology.WorkshopInterface;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelManifest;
 import net.fhirfactory.pegacorn.core.model.dataparcel.DataParcelTypeDescriptor;
@@ -70,7 +70,7 @@ public class CheckpointWUP extends MOAStandardWUP {
     private PolicyEnforcementWorkshop policyEnforcementWorkshop;
 
     @Inject
-    private PegacornReferenceProperties referenceProperties;
+    private DRICaTSReferenceProperties referenceProperties;
 
     @Inject
     private HL7V2XTopicFactory topicFactory;
