@@ -6,6 +6,8 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import net.fhirfactory.pegacorn.core.interfaces.topology.ProcessingPlantInterface;
+import net.fhirfactory.pegacorn.core.model.petasos.participant.id.PetasosParticipantId;
 import org.apache.camel.Exchange;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -48,6 +50,9 @@ public class StartupCommunicateEmailCreator {
 
     @Inject
     private CommunicateMessageTopicFactory communicateMessageTopicFactory;
+
+    @Inject
+    private ProcessingPlantInterface processingPlant;
 
     public StartupCommunicateEmailCreator(){
         this.jsonMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
@@ -103,10 +108,15 @@ public class StartupCommunicateEmailCreator {
         }
 
         if(StringUtils.isNotEmpty(payloadString)){
+            PetasosParticipantId previousParticipantSubscription = new PetasosParticipantId();
+            previousParticipantSubscription.setSubsystemName(processingPlant.getSubsystemParticipantName());
+            previousParticipantSubscription.setName(DataParcelManifest.WILDCARD_CHARACTER);
+            previousParticipantSubscription.setVersion(DataParcelManifest.WILDCARD_CHARACTER);
             DataParcelManifest emailManifest = new DataParcelManifest();
             DataParcelTypeDescriptor emailTypeDescriptor = communicateMessageTopicFactory.createEmailTypeDescriptor();
             emailManifest.setContentDescriptor(emailTypeDescriptor);
-            emailManifest.setSourceProcessingPlantParticipantName(DataParcelManifest.WILDCARD_CHARACTER);
+            emailManifest.setOriginParticipant(previousParticipantSubscription);
+            emailManifest.setPreviousParticipant(previousParticipantSubscription);
             emailManifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
             emailManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_FALSE);
             emailManifest.setSourceSystem(DataParcelManifest.WILDCARD_CHARACTER);

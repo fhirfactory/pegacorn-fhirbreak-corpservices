@@ -27,6 +27,9 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import net.fhirfactory.pegacorn.core.interfaces.topology.ProcessingPlantInterface;
+import net.fhirfactory.pegacorn.core.model.petasos.participant.id.PetasosParticipantId;
+import net.fhirfactory.pegacorn.processingplant.ProcessingPlant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,6 +82,9 @@ public class InteractSMTPEgressWUP extends MOAStandardWUP {
     @Inject
     private CommunicateMessageTopicFactory communicateMessageTopicFactory;
 
+    @Inject
+    private ProcessingPlantInterface processingPlant;
+
     
     public InteractSMTPEgressWUP() {
     }
@@ -90,10 +96,22 @@ public class InteractSMTPEgressWUP extends MOAStandardWUP {
 
     @Override
     protected List<DataParcelManifest> specifySubscriptionTopics() {
+
+        PetasosParticipantId previousParticipantSubscription = new PetasosParticipantId();
+        previousParticipantSubscription.setSubsystemName(processingPlant.getSubsystemParticipantName());
+        previousParticipantSubscription.setName(DataParcelManifest.WILDCARD_CHARACTER);
+        previousParticipantSubscription.setVersion(DataParcelManifest.WILDCARD_CHARACTER);
+
+        PetasosParticipantId originParticipantSubscription = new PetasosParticipantId();
+        originParticipantSubscription.setSubsystemName(DataParcelManifest.WILDCARD_CHARACTER);
+        originParticipantSubscription.setName(DataParcelManifest.WILDCARD_CHARACTER);
+        originParticipantSubscription.setVersion(DataParcelManifest.WILDCARD_CHARACTER);
+
         DataParcelManifest emailSubscriptionManifest = new DataParcelManifest();
         DataParcelTypeDescriptor emailTypeDescriptor = communicateMessageTopicFactory.createEmailTypeDescriptor();
         emailSubscriptionManifest.setContentDescriptor(emailTypeDescriptor);
-        emailSubscriptionManifest.setSourceProcessingPlantParticipantName(DataParcelManifest.WILDCARD_CHARACTER);
+        emailSubscriptionManifest.setOriginParticipant(originParticipantSubscription);
+        emailSubscriptionManifest.setPreviousParticipant(previousParticipantSubscription);
         emailSubscriptionManifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
         emailSubscriptionManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_FALSE);
         emailSubscriptionManifest.setSourceSystem(DataParcelManifest.WILDCARD_CHARACTER);
@@ -107,7 +125,9 @@ public class InteractSMTPEgressWUP extends MOAStandardWUP {
         emailSubscriptionManifest = new DataParcelManifest();
         emailTypeDescriptor = communicateMessageTopicFactory.createEmailTypeDescriptor();
         emailSubscriptionManifest.setContentDescriptor(emailTypeDescriptor);
-        emailSubscriptionManifest.setSourceProcessingPlantParticipantName(DataParcelManifest.WILDCARD_CHARACTER);
+
+        emailSubscriptionManifest.setOriginParticipant(originParticipantSubscription);
+        emailSubscriptionManifest.setPreviousParticipant(previousParticipantSubscription);
         emailSubscriptionManifest.setNormalisationStatus(DataParcelNormalisationStatusEnum.DATA_PARCEL_CONTENT_NORMALISATION_TRUE);
         emailSubscriptionManifest.setValidationStatus(DataParcelValidationStatusEnum.DATA_PARCEL_CONTENT_VALIDATED_FALSE);
         emailSubscriptionManifest.setSourceSystem(DataParcelManifest.WILDCARD_CHARACTER);
